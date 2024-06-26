@@ -19,9 +19,9 @@ class MessageLogerMiddleware(BaseMiddleware):
             event: TelegramObject,
             data: dict[str: Any]):
         if event.message:
-            loger.info(f'[MESSAGE]{event.message.from_user.full_name} ({event.message.from_user.username}) >>> {event.message.text}')
+            loger.info(f' [MESSAGE] {event.message.from_user.full_name} ({event.message.from_user.username}) >>> {event.message.text}')
         elif event.callback_query:
-            loger.info(f'[CALLBACK]{event.callback_query.from_user.full_name} ({event.callback_query.from_user.username}) => {event.callback_query.data}')
+            loger.info(f' [CALLBACK] {event.callback_query.from_user.full_name} ({event.callback_query.from_user.username}) => {event.callback_query.data}')
         return await handler(event, data)
 
 
@@ -41,5 +41,8 @@ async def main() -> None:
 
 # run long-polling
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    if config.DEBUGMODE:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
