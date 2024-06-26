@@ -1,6 +1,7 @@
 
 import asyncio
 import time
+import datetime
 import logging
 import os
 from typing import Any, Callable
@@ -34,15 +35,21 @@ async def main() -> None:
     dp.update.outer_middleware(MessageLogerMiddleware())
     
     dp.include_routers(*routers)
-
+    
     # And the run events dispatching
     await bot.send_message(1122505805, f'Я запустился ({time.ctime()})')
+    print('Bot runned!')
     await dp.start_polling(bot)
 
 # run long-polling
 if __name__ == "__main__":
-    if config.DEBUGMODE:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    date_string = datetime.datetime.now().strftime(r'%Y-%m-%d_%H-%M-%S')
+    log_file_name = f'logs/log-{date_string}.txt'
+    logging.basicConfig(
+        filename=log_file_name, 
+        filemode='w', 
+        level=logging.DEBUG if config.DEBUGMODE else logging.INFO,
+        encoding='utf-8'
+        )
+
     asyncio.run(main())

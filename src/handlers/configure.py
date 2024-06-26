@@ -79,7 +79,7 @@ def _subject_to_button(subject: Subject | EmptySubject, callback_data_prefix: st
     return InlineKeyboardButton(text=str(subject), callback_data=f'{callback_data_prefix}_{subject.encode()}')
 
 def _get_all_subjects_markup(subjects: list[Subject]) -> InlineKeyboardMarkup:
-    keyboard = []
+    keyboard: list[list[InlineKeyboardButton]] = []
     callback_prefix = 'ttsubject'
     for i, subject in enumerate(subjects):
         if i % 3 == 0:
@@ -87,6 +87,9 @@ def _get_all_subjects_markup(subjects: list[Subject]) -> InlineKeyboardMarkup:
         else:
             keyboard[i // 3][i % 3] = _subject_to_button(subject, callback_prefix)
     keyboard.append([_subject_to_button(EmptySubject(), callback_prefix)])
+    for row in keyboard:
+        while None in row:
+            row.remove(None)
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def _get_tt_end_markup(now_weekday: int, is_last_day: bool=False) -> InlineKeyboardMarkup:
@@ -287,6 +290,7 @@ async def ending_tt(callback: CallbackQuery, state: FSMContext):
                 'Настройка расписания завершена! (Показать расписание - /timetable)'
             )
             await state.set_state(None)
+            return
     await callback.message.edit_text(
         _format_answer_timtable_making(weekday, cfg.timetable(weekday)),
         reply_markup=_get_all_subjects_markup(cfg.subjects())
