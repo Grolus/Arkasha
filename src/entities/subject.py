@@ -1,6 +1,7 @@
 
 from exceptions import SubjectError, DecodingSubjectError
 from logers import subject as loger
+from storage.tables import SubjectTable
 
 from abc import abstractmethod
 
@@ -15,6 +16,11 @@ class BaseSubject:
     @abstractmethod
     def decode(coded_subject: str):
         ...
+    
+    @classmethod
+    def from_table_value(cls, tablesubject: SubjectTable):
+        name = tablesubject._v_subjectname
+        return cls(name)
 
 
 class EmptySubject(BaseSubject):
@@ -47,8 +53,12 @@ class Subject(BaseSubject):
                 return EmptySubject.decode(coded_subject)
             raise DecodingSubjectError('Can`t decode subject "%s"' % coded_subject)
         subject = Subject._instances[int(coded_subject)]
-        loger.debug(f'It is {subject}')
+        loger.debug(f'It is {subject!r}')
         return subject
 
 
+DEFAULT_SUBJECTS_NAMES = ['Русский язык', 'Математика', 'Физика']
+DEFAULT_SUBJECTS = [
+    Subject(name) for name in DEFAULT_SUBJECTS_NAMES
+]
 

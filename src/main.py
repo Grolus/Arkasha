@@ -3,7 +3,6 @@ import asyncio
 import time
 import datetime
 import logging
-import os
 from typing import Any, Callable
 from aiogram import Bot, Dispatcher, BaseMiddleware
 from aiogram.types import TelegramObject, Message, CallbackQuery
@@ -43,6 +42,7 @@ async def main() -> None:
 
 # run long-polling
 if __name__ == "__main__":
+    
     date_string = datetime.datetime.now().strftime(r'%Y-%m-%d_%H-%M-%S')
     log_file_name = f'logs/log-{date_string}.txt'
     logging.basicConfig(

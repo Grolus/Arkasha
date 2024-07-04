@@ -1,0 +1,32 @@
+
+from .base import BaseTable, Column
+from ..connection import DBConection
+
+
+db = DBConection()
+
+class AdministratorTable(BaseTable):
+    _table_name = 'administrator'
+    unique_column_name = 'username'
+    def __new__(cls, _username: str=None, _administrator_id: int=None, **kwargs):
+        if _username is None and _administrator_id is None:
+            instance = super().__new__(cls)
+            return instance
+        instance = cls.get(_username, _administrator_id)
+        return instance
+    def __init__(self, _username: str=None, _administrator_id: int=None, **kwargs):
+        if _username is None and _administrator_id is None:
+            super().__init__(**kwargs)
+        
+    def get_classes(self) -> list:
+        from . import ClassTable
+        if result := db.query(f"SELECT idAdministrator FROM administrator WHERE username='{self._v_username}'"):
+            admin_id = result[0][0]
+            result = db.query(f"SELECT classID FROM classadministrator WHERE administratorID={admin_id}")
+            classes_names = []
+            for class_id, in result:
+                result = db.query(f"SELECT * FROM class WHERE idClass={class_id}")
+                classes_names.append(ClassTable.from_selected_row(result[0]))
+            return classes_names
+        else:
+            return None
