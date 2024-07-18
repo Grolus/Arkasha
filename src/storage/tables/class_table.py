@@ -75,3 +75,7 @@ class ClassTable(BaseTable):
             ]
         return subjects
     
+    def add_subject(self, subject_name: str):
+        from . import SubjectTable, ClassSubjectTable
+        SubjectTable()
+

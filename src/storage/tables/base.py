@@ -72,7 +72,8 @@ class BaseTable(object):
     _table_name: str
     _pk_column_name: str=None
     _columns: list[Column]=None
-    values: dict[Column: Any]
+    values_by_columns: dict[Column: Any]
+    values_by_column_names: dict[str: Any]
     _id: int=None
     _is_in_db: bool=None
     unique_column_name: str=None
@@ -109,9 +110,9 @@ class BaseTable(object):
                     f"({enter}{f', {enter}'.join(map(repr, missing_columns))}" + # required columns
                     f"{(f', {enter}[' + f'], {enter}['.join(map(repr, defaulted_columns)) + ']') if defaulted_columns else ''}{enter})" # optional columns
                     )
-        self.values = _finded_to_values(finded, self.get_columns())
-
-        self.__dict__.update({'_v_' + col.name: val for col, val in self.values.items()})
+        self.values_by_columns = _finded_to_values(finded, self.get_columns())
+        self.values_by_column_names = {col.name: val for col, val in self.values_by_columns.items()}
+        self.__dict__.update({'_v_' + col.name: val for col, val in self.values_by_columns.items()})
     @classmethod
     def get_columns(cls) -> list[Column]:
         if not cls._columns:
@@ -159,7 +160,7 @@ class BaseTable(object):
     def id_(self):
         if not self._id:
             if self.check_if_in_db():
-                condition = _format_condition(self.values)
+                condition = _format_condition(self.values_by_columns)
                 result = DBConection().query(
                     f"""SELECT {self._pk_column_name} 
                     FROM {self._table_name}
@@ -173,17 +174,17 @@ class BaseTable(object):
     
     def check_if_in_db(self) -> bool:
         if self._is_in_db is None:
-            result = DBConection().query(f"""SELECT * FROM {self._table_name} WHERE {_format_condition(self.values)}""")
+            result = DBConection().query(f"""SELECT * FROM {self._table_name} WHERE {_format_condition(self.values_by_columns)}""")
             self._is_in_db = not not result
         return self._is_in_db
 
     def insert(self) -> bool:
         """Inserts table value to database. If inserted returns `True`"""
-        columns = [col.name for col in self.values]
+        columns = [col.name for col in self.values_by_columns]
         if not self.check_if_in_db():
             DBConection().query(
                 f"""INSERT INTO {self._table_name} ({', '.join(columns)}) 
-                VALUES ({', '.join([_format_value_to_db(val) for val in self.values.values()])})"""
+                VALUES ({', '.join([_format_value_to_db(val) for val in self.values_by_columns.values()])})"""
                 )
             self._is_in_db = True
             return True
@@ -191,7 +192,7 @@ class BaseTable(object):
 
     def as_kwargs(self) -> dict:
         kwargs = {}
-        for k, v in self.values.items():
+        for k, v in self.values_by_columns.items():
             if issubclass(k.datatype, BaseTable):
                 kwargs.update(v.as_kwargs())
             else:
@@ -245,7 +246,7 @@ class BaseTable(object):
             if len(result) > 1:
                 raise ColumnError(f"Column {cls.unique_column_name!r} in table {cls._table_name!r} is not unique!")
             return cls.from_selected_row(result[0])
-        else:
+        else: 
             raise ColumnError(f"Table {cls._table_name!r} has not an unique column!")
     @classmethod
     def get(cls, uq_column_value: Any | None=None, id_: int | None=None):
@@ -256,4 +257,12 @@ class BaseTable(object):
         else:
             class_ = cls.get_by_unique_column(uq_column_value)
         return class_
- 
+    
+    def update(self, column_name: str, new_value: Any):
+        DBConection().query(
+            f"UPDATE {self._table_name} SET {column_name}={_format_value_to_db(new_value)} WHERE {_format_condition(self.values_by_columns)}"
+            )
+        self.__setattr__(f'_v_{column_name}', new_value)
+        self.values_by_columns[Column()]
+
+

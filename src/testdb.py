@@ -1,11 +1,9 @@
 
 
-from storage.tables import ClassTable, AdministratorTable
+from storage.tables import ClassTable, AdministratorTable, SubjectTable
 from storage.connection import DBConection
-from bot_configuration import Bot_configuration
-from entities import Timetable, DEFAULT_SUBJECTS
 from config import DATABASE
-from utils import Weekday
+
 
 import logging
 import sys
@@ -41,5 +39,4 @@ print(ClassTable.from_selected(res[0]))
 """
 # test BaseTable.from_selected()
 
-
-ClassTable()
+SubjectTable()

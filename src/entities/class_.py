@@ -4,7 +4,7 @@ from typing_extensions import Self
 from .subject import Subject
 from .timetable import Timetable
 from utils import Weekday
-from storage.tables import ClassTable, AdministratorTable
+from storage.tables import ClassTable, AdministratorTable, SubjectTable
 
 
 class Class():
@@ -18,11 +18,12 @@ class Class():
             timetables: dict[int: Timetable],
             connected_table_value: ClassTable=None
             ):
-        self.name = name
+        self._name = name
         self.creator = creator_username
         self.administrators = administrators
         self.subjects = subjects
         self.timetables = timetables
+        self.editor = self.creator
         if not connected_table_value:
             connected_table_value = ClassTable(
                 classname=self.name,
@@ -31,7 +32,20 @@ class Class():
                 lastlearningweekday=len(self.timetables)-1
                 )
         self.connected_table_value = connected_table_value
-        
+
+    @property
+    def name(self):
+        return self._name
+    @name.setter
+    def name(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError(f"'classname' is type str, not {type(value)}")
+        self.connected_table_value.update('classname', value)
+        self._name = value
+
+    def add_subject(self, subject: Subject):
+        self.subjects.append(subject)
+        self.connected_table_value.add_subject(subject.name)
 
     def get_information_string(self):
         enter = '\n'

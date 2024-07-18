@@ -20,3 +20,5 @@ class EditConfigureState(StatesGroup):
     changing_subject_list = State()
     changing_admin_list = State()
     choosing_day_for_timetable_change = State()
+    classname_edited = State()
+    waiting_for_new_subject = State()
