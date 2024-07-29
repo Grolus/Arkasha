@@ -14,13 +14,15 @@ class ConfigureInlineKeyboardMarkup:
         ]
     )
     choosing_studytype = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='5 дней', callback_data='studytype_5'),
+        [InlineKeyboardButton(text='4 дня', callback_data='studytype_4'),
+         InlineKeyboardButton(text='5 дней', callback_data='studytype_5'),
           InlineKeyboardButton(text='6 дней', callback_data='studytype_6')]
           ]
     )
     choosing_timetable_way = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='По кнопкам (рекомендовано)', callback_data='timetableway_smart'),
-         InlineKeyboardButton(text='Вручную', callback_data='timetableway_manually')]
+         #InlineKeyboardButton(text='Вручную', callback_data='timetableway_manually')
+         ]
     ])
 
     def get_timetable_ending_markup(now_weekday: Weekday, is_last_day: bool=False) -> InlineKeyboardMarkup:
@@ -47,7 +49,7 @@ class ConfigureInlineKeyboardMarkup:
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
     def get_edit_or_new_cfg_choosing_markup(existed_classes):
         return InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text=f'Класс {class_._v_classname}', callback_data=f'editcfgbegin_{class_.id_}') 
+                [InlineKeyboardButton(text=f'Класс {class_.values.classname}', callback_data=f'editcfgbegin_{class_.id_}') 
                  ] for class_ in existed_classes
             ] + [[InlineKeyboardButton(text='Создать новый класс', callback_data='newcfgbegin')]])
 
@@ -65,3 +67,8 @@ class EditConfigureInlineKeyboardMarkup:
              [InlineKeyboardButton(text='Готово', callback_data='adminlistchange_finish')]
         ]
     )
+    def get_all_administrators_markup(admins: list[str]):
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text=admin, callback_data=f'removedadmin_{admin}')]
+            for admin in admins
+        ])

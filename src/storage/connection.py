@@ -22,7 +22,7 @@ class DBConection():
         return cls.__instance
 
     def _execute(self, query: str) -> None:
-        loger.debug(f'Executing query: {query}')
+        (loger.debug if query.strip().lower().startswith('select') else loger.info)(f'Executing query: {query}')
         self._c.execute(query)
         self._connection.commit()
     

@@ -1,6 +1,6 @@
 
 from typing_extensions import Self
-from entities import Subject, Timetable, DEFAULT_SUBJECTS
+from entities import Subject, Timetable, DEFAULT_SUBJECTS, Class
 from exceptions import SubjectListChangingError, ConfigureError
 from utils.weekday import Weekday
 
@@ -72,7 +72,7 @@ class Bot_configuration():
         return False
 
     def clear_tt(self, weekday: int):
-        self._all_timetable[weekday] = [None for _ in range(self._lessons_in_day)]
+        self._all_timetable[int(weekday)] = [None for _ in range(self._lessons_in_day)]
 
     def timetable(self, weekday: Weekday):
         return self._all_timetable[int(weekday)]
@@ -85,6 +85,15 @@ class Bot_configuration():
         self._all_timetable = [[None for _ in range(self._lessons_in_day)] 
                            for _ in range(5 if self._is_5_days_studytype else 6)]
 
+    @classmethod
+    def from_entity(class_: Class) -> Self:
+        Bot_configurator(class_.creator, class_.name)
+        cfg = Bot_configurator.get(class_.creator)
+        cfg._all_timetable = sorted([v for v in class_.timetables.values()])
+        cfg._subjects_list = class_.subjects
+        cfg._lessons_in_day = max(map(len, class_.timetables.values()))
+        cfg.set_is_5_days_studytype(len(class_.timetables) == 5)
+        
 
 class Bot_configurator():
     """Defines class to be configured by a user"""

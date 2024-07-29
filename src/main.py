@@ -3,9 +3,10 @@ import asyncio
 import time
 import datetime
 import logging
+import sys
 from typing import Any, Callable
 from aiogram import Bot, Dispatcher, BaseMiddleware
-from aiogram.types import TelegramObject, Message, CallbackQuery
+from aiogram.types import TelegramObject
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -45,11 +46,18 @@ if __name__ == "__main__":
     
     date_string = datetime.datetime.now().strftime(r'%Y-%m-%d_%H-%M-%S')
     log_file_name = f'logs/log-{date_string}.txt'
-    logging.basicConfig(
-        filename=log_file_name, 
-        filemode='w', 
-        level=logging.DEBUG if config.DEBUGMODE else logging.INFO,
-        encoding='utf-8'
+    if config.DEBUGMODE:
+        logging.basicConfig(
+            stream=sys.stdout,
+            level=logging.DEBUG,
+            encoding='utf-8',
         )
+    else:
+        logging.basicConfig(
+            filename=log_file_name, 
+            filemode='w', 
+            level=logging.INFO,
+            encoding='utf-8'
+            )
 
     asyncio.run(main())

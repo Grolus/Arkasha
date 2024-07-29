@@ -2,23 +2,26 @@
 from entities import Subject, EmptySubject
 from .weekday import Weekday
 
-def subject_list_to_str(subject_list: list[Subject], *,
+def subject_list_to_str(subject_list: list[Subject | None], *,
                          html_tags: str='', separator: str='\n', 
-                         numbered: bool=False, decorate_numbers: bool=False, start_numbers: int=1):
+                         numbered: bool=False, decorate_numbers: bool=False, start_numbers: int=1,
+                         subject_cursor: int=None):
     """Converts list of subjects to string (subjects names separated by '\\n')\n
-    :param subject_list: list of subjects to print
+    :param subject_list: list of subjects to print (If subject_list[i] is None, '...' will be printed)
     :param html_tags: (Optional) html-tags to decorate final string (e. g. `tags='bu'` => `'<b><u>{subjects_to_print}</u></b>)'`"""
     subjects_to_print = separator.join(
         [(f'{start_numbers+i}. ' if numbered and not decorate_numbers else '') + foramat_html_tags(
-            html_tags, 
-            (f'{start_numbers+i}. ' if numbered and decorate_numbers else '') + subject.name if not subject is None else '...')
+            ('bu' if subject_cursor == i else html_tags), 
+            (f'{start_numbers+i}. ' if numbered and decorate_numbers else '') + 
+                (subject.name if not subject is None else '...')
+            )
          for i, subject in enumerate(subject_list)]
         )
     return subjects_to_print
 
-def format_answer_timtable_making(weekday: Weekday, timetable: list[Subject], posttext: str='') -> str:
+def format_answer_timtable_making(weekday: Weekday, timetable: list[Subject], posttext: str='', cursor: int=None) -> str:
     answer = f'Составляем расписание на <b><u>{weekday.genetive}</u></b>. \n\n' + \
-    subject_list_to_str(timetable, html_tags='i', numbered=True) + '\n\n' + \
+    subject_list_to_str(timetable, html_tags='i', numbered=True, subject_cursor=cursor) + '\n\n' + \
     (posttext or f'Нажимайте на предметы в нужном порядке или на "{EmptySubject.name}", если в этот момент нет урока.')
     return answer
 

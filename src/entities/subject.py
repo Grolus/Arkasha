@@ -1,9 +1,14 @@
 
 from exceptions import SubjectError, DecodingSubjectError
-from logers import subject as loger
-from storage.tables import SubjectTable
 
 from abc import abstractmethod
+
+__all__ = (
+    'Subject',
+    'EmptySubject',
+    'DEFAULT_SUBJECTS'
+)
+
 
 class BaseSubject:
     name: str
@@ -18,8 +23,8 @@ class BaseSubject:
         ...
     
     @classmethod
-    def from_table_value(cls, tablesubject: SubjectTable):
-        name = tablesubject._v_subjectname
+    def from_table_value(cls, table_subject):
+        name = table_subject.values.subjectname
         return cls(name)
 
 
@@ -47,17 +52,17 @@ class Subject(BaseSubject):
         return str(Subject._instances.index(self))
     @staticmethod
     def decode(coded_subject: str):
-        loger.debug(f'Decoding subject with code {coded_subject!r}...')
         if not coded_subject.isnumeric() or 0 > int(coded_subject) > len(Subject._instances):
             if int(coded_subject) == EmptySubject.code:
                 return EmptySubject.decode(coded_subject)
             raise DecodingSubjectError('Can`t decode subject "%s"' % coded_subject)
         subject = Subject._instances[int(coded_subject)]
-        loger.debug(f'It is {subject!r}')
         return subject
 
 
-DEFAULT_SUBJECTS_NAMES = ['Русский язык', 'Математика', 'Физика']
+DEFAULT_SUBJECTS_NAMES = [
+    'Русский язык', 'Математика', 'Физика', 'Алгебра', 
+    'Геометрия', 'Физическая культура', 'История', 'ОБЖ', 'Обществознание']
 DEFAULT_SUBJECTS = [
     Subject(name) for name in DEFAULT_SUBJECTS_NAMES
 ]

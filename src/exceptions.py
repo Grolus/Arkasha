@@ -1,5 +1,5 @@
 import logging
-from logers import arkasha, handle, database
+from logers import arkasha, handle, database, entity
 
 class BaseArkashaException(BaseException):
     loger: logging.Logger = arkasha
@@ -8,16 +8,28 @@ class BaseArkashaException(BaseException):
         self.loger.error(f'{self.__class__.__name__}: {message}')
 
 
+class BaseEntityException(BaseArkashaException):
+    loger = entity
+
 class ConfigureError(BaseArkashaException):
     loger = handle
 
 class SubjectListChangingError(ConfigureError):
     ...
 
-class SubjectError(BaseArkashaException):
+class SubjectError(BaseEntityException):
     ...
 
 class DecodingSubjectError(SubjectError):
+    ...
+
+class ClassError(BaseEntityException):
+    ...
+
+class AdministratorsListChangingError(ClassError):
+    ...
+
+class TimetableUpdatingError(ClassError):
     ...
 
 class BaseDatabaseException(BaseArkashaException):
@@ -32,9 +44,8 @@ class WrongColumnError(ColumnError):
 class WrongDatatypeError(ColumnError):
     ...
 
-class ColumnNotFoundedError(ColumnError):
+class ColumnNotFoundError(ColumnError):
     ...
 
 class ConnectionError(BaseDatabaseException):
     ...
-

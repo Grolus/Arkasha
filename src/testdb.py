@@ -1,9 +1,11 @@
 
 
-from storage.tables import ClassTable, AdministratorTable, SubjectTable
+from storage.tables import *
 from storage.connection import DBConection
 from config import DATABASE
-
+from entities import Subject, Timetable, Class
+from entities.subject import DEFAULT_SUBJECTS
+from utils import Weekday
 
 import logging
 import sys
@@ -39,4 +41,13 @@ print(ClassTable.from_selected(res[0]))
 """
 # test BaseTable.from_selected()
 
-SubjectTable()
+class_ = Class('qwerty', 'grolus', [], [Subject('Русский язык'), Subject('Математика'), Subject('Литература')],
+               {Weekday(0): Timetable([Subject('Русский язык')]),
+                Weekday(1): Timetable([Subject('Математика')])})
+
+class_.start_timetable_updating(Weekday(0))
+class_.update_timetable(Subject('Литература'))
+
+print(class_.timetables)
+
+
