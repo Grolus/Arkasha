@@ -1,15 +1,13 @@
 from aiogram import Router, F
-from aiogram.types import Message, InlineKeyboardButton, CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from typing import Any
-from enum import Enum
 
 from filters import ChatTypeFilter
 from entities import Subject, TimetableBuilder, Timetable
 from entities.subject import DEFAULT_SUBJECTS
 from storage.tables import AdministratorTable, ClassTable
-from utils.weekday import Weekday, parse_weekdays
+from utils import Weekday, parse_weekdays
 from utils.states import ConfigureState
 from utils.keyboards import ConfigureInlineKeyboardMarkup as InlineMarkup
 from utils.strings import (format_answer_changed_subject_list, 
@@ -23,7 +21,7 @@ from logers import handle as loger
 
 ENTER = '\n'
 
-router = Router()
+router = Router(name='create_configuration')
 router.message.filter(ChatTypeFilter('private'))
 
 
@@ -43,23 +41,25 @@ class DynamicCreator:
 
 CREATORS: dict[str: DynamicCreator] = {}
 
-# TODO class OnAnyMessageMiddleware()
-
-
-
-
+# TODO edit every handler. they should return answerred/edited message
+# TODO cancel button
+# TODO delete DynamicCreator and use state.update_data/state.get_data
+# TODO /configure [args] (ex. another username)
+# TODO timetable way (delete it)
+# TODO optimize ClassTable.save_new*
 
 @router.message(Command('configure'), StateFilter(None))
 async def start_configure(message: Message, state: FSMContext):
     if existed_users_classes := AdministratorTable(message.from_user.username).get_classes():
-        await message.answer(
+        await state.set_state(ConfigureState.edit_or_new_class_choosing)
+        return await message.answer(
             format_answer_start_configure(len(existed_users_classes)),
             reply_markup=InlineMarkup.get_edit_or_new_cfg_choosing_markup(existed_users_classes)
         )
-        await state.set_state(ConfigureState.edit_or_new_class_choosing)
     else:
-        await message.answer('Вы начали конфигурацию нового класса! Для начала придумайте уникальное имя для вашего нового класса. Например, "1А 1 школа"')
         await state.set_state(ConfigureState.typing_class_name)
+        return await message.answer('Вы начали конфигурацию нового класса! Для начала придумайте уникальное имя для вашего нового класса. Например, "1А 1 школа"')
+        
 
 @router.callback_query(F.data == 'newcfgbegin', ConfigureState.edit_or_new_class_choosing)
 async def start_new_class(callback: CallbackQuery, state: FSMContext):

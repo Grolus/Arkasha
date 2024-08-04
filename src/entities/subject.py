@@ -14,8 +14,12 @@ class BaseSubject:
     name: str
     def __str__(self):
         return self.name
+    def __hash__(self) -> int:
+        return int(self.encode())
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} object {self.name!r}>'
     @abstractmethod
-    def encode(self):
+    def encode(self) -> str:
         ...
     @staticmethod
     @abstractmethod
@@ -31,9 +35,15 @@ class BaseSubject:
 class EmptySubject(BaseSubject):
     name = 'Ничего'
     code = -1
-
+    __instance = None
+    def __new__(cls):
+        if cls.__instance:
+            return cls.__instance
+        instance = super().__new__(cls)
+        cls.__instance = instance
+        return instance
     def encode(self):
-        return EmptySubject.code
+        return str(EmptySubject.code)
     @staticmethod
     def decode(coded_subject: str):
         return EmptySubject()
@@ -58,11 +68,12 @@ class Subject(BaseSubject):
             raise DecodingSubjectError('Can`t decode subject "%s"' % coded_subject)
         subject = Subject._instances[int(coded_subject)]
         return subject
+    
 
 
 DEFAULT_SUBJECTS_NAMES = [
     'Русский язык', 'Математика', 'Физика', 'Алгебра', 
-    'Геометрия', 'Физическая культура', 'История', 'ОБЖ', 'Обществознание']
+    'Геометрия', 'Физкультура', 'История', 'ОБЖ', 'Обществознание']
 DEFAULT_SUBJECTS = [
     Subject(name) for name in DEFAULT_SUBJECTS_NAMES
 ]

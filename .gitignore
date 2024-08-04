@@ -3,3 +3,4 @@ idea.txt
 **/__pycache__
 config.json
 **/logs
+**/.vscode

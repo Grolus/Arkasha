@@ -28,3 +28,13 @@ class EditConfigureState(StatesGroup):
     timetable_changing_end = State()
     classname_edited = State()
     waiting_for_new_subject = State()
+
+class SetClassState(StatesGroup):
+    choosing_class = State()
+
+class HomeworkSettingState(StatesGroup):
+    typing_homework = State()
+    choosing_subject = State()
+    choosing_weekday = State()
+
+

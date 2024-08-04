@@ -4,7 +4,7 @@ from typing import Type, Any, TypeAlias, Union
 from typing_extensions import Self
 
 from ..connection import DBConection
-from exceptions import WrongColumnError, WrongDatatypeError, ColumnNotFoundError, ColumnError
+from exceptions import WrongColumnError, WrongDatatypeError, ColumnNotFoundError, ColumnError, ValueNotFoundError
 from config import DATABASE
 
 from logers import database as loger
@@ -37,10 +37,13 @@ def _format_value_to_db(value: _CanBeInDatabase) -> str:
     if isinstance(value, BaseTable): return str(value.id_)
 
 def _format_condition(values: dict[str: str]):
-    return ' AND '.join([
+    loger.debug(f'Format condition for {values=}')
+    condition = ' AND '.join([
         f'{column_name}={_format_value_to_db(value)}' if not value is None else f'ISNULL({column_name})' 
         for column_name, value in values.items()
         ])
+    loger.debug(repr(condition))
+    return condition
 
 
 class Column:
@@ -275,7 +278,7 @@ class BaseTable(object):
             if len(result) > 1:
                 raise ColumnError(f"Column {cls.unique_column_name!r} in table {cls._table_name!r} is not unique!")
             elif len(result) == 0:
-                raise ValueError(f'Row with {cls.unique_column_name}={unique_column_value} in table {cls._table_name} not found')
+                raise ValueNotFoundError(f'Row with {cls.unique_column_name}={unique_column_value} in table {cls._table_name} not found')
             return cls.from_selected_row(result[0])
         else: 
             raise ColumnError(f"Table {cls._table_name!r} has not an unique column!")

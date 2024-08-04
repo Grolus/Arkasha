@@ -21,6 +21,8 @@ class Timetable:
         return iter(self.lessons)
     def __len__(self):
         return len(self.lessons)
+    def __contains__(self, sj):
+        return sj in self.lessons
     
     def update_lesson(self, class_: 'Class', new_subject: Subject): # type: ignore
         pos = class_._subject_cursor

@@ -32,6 +32,7 @@ class AdministratorsListChangingError(ClassError):
 class TimetableUpdatingError(ClassError):
     ...
 
+
 class BaseDatabaseException(BaseArkashaException):
     loger = database
 
@@ -48,4 +49,7 @@ class ColumnNotFoundError(ColumnError):
     ...
 
 class ConnectionError(BaseDatabaseException):
+    ...
+
+class ValueNotFoundError(BaseDatabaseException, ValueError):
     ...

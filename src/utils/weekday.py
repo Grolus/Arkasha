@@ -61,12 +61,12 @@ class Weekday:
         return Weekday.__NAMES_RU[self.__number]
     def __add__(self, integer: int) -> Self:
         if not isinstance(integer, int):
-            ValueError(f"Cant add {type(integer).__name__!r} to a \'Weekday\' (only 'Weekday' + 'int' allowed)")
+            raise ValueError(f"Cant add {type(integer).__name__!r} to a \'Weekday\' (only 'Weekday' + 'int' allowed)")
         new_number = (self.__number + integer) % 7
         return Weekday(new_number)
     def __sub__(self, integer: int) -> Self:
         if not isinstance(integer, int):
-            ValueError(f"Cant subtract {type(integer).__name__!r} of a \'Weekday\' (only 'Weekday' - 'int' allowed)")
+            raise ValueError(f"Cant subtract {type(integer).__name__!r} of a \'Weekday\' (only 'Weekday' - 'int' allowed)")
         new_number = (self.__number - integer) % 7
         return Weekday(new_number)
     def __eq__(self, other: Self | int) -> bool:
@@ -77,34 +77,3 @@ class Weekday:
     def __hash__(self) -> int:
         return self.__number
     
-
-def word_to_weekday(word: str):
-    for wd in [Weekday(i) for i in range(7)]:
-        if word in wd._all_variants():
-            return wd
-    raise ValueError(f'word_to_weekday: word {word} not parsable as weekday')
-
-def _weekday_range(from_: Weekday, to: Weekday):
-    if int(from_) > int(to):
-        from_, to = to, from_
-    if from_ == to:
-        return from_
-    return list(map(Weekday, range(int(from_), int(to)))) + [to]
-
-def parse_weekdays(text: str) -> list[Weekday]:
-    text = text.lower().replace(' ', '')
-    parts = text.split(',')
-    weekdays = []
-    for part in parts:
-        if '-' in part:
-            wd_range = _weekday_range(*map(word_to_weekday, part.split('-')))
-            weekdays.extend([wd for wd in wd_range if not wd in weekdays])
-        else:
-            wd = word_to_weekday(part)
-            if not wd in weekdays:
-                weekdays.append(wd)
-    weekdays.sort(key=lambda x: int(x))
-    return weekdays
-
-
-

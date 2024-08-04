@@ -21,19 +21,19 @@ class AdministratorTable(BaseTable):
         if _username is None and _administrator_id is None:
             super().__init__(**kwargs)
         
-    def get_classes(self) -> list:
+    def get_classes(self) -> list['ClassTable']: # type: ignore
         from . import ClassTable
         if result := db.query(f"SELECT idAdministrator FROM administrator WHERE username='{self.values.username}'"):
             admin_id = result[0][0]
             result = db.query(f"SELECT classID FROM classadministrator WHERE administratorID={admin_id}")
-            classes_names = []
+            classes = []
             for class_id, in result:
                 result = db.query(f"SELECT * FROM class WHERE idClass={class_id}")
-                classes_names.append(ClassTable.from_selected_row(result[0]))
-            return classes_names
+                classes.append(ClassTable.from_selected_row(result[0]))
+            return classes
         else:
-            return None
-     
+            return []
+
     @override
     @classmethod
     def get_by_unique_column(cls, unique_column_value: Any):

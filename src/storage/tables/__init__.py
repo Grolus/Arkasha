@@ -7,6 +7,8 @@ from .lesson_table import LessonTable
 from .classadministrator_table import ClassAdministratorTable
 from .classsubject_table import ClassSubjectTable
 from .classweekday_table import ClassWeekdayTable
+from .chat_table import ChatTable
+from .homework_table import HomeworkTable
 
 __all__ = (
     'BaseTable',
@@ -16,5 +18,7 @@ __all__ = (
     'LessonTable',
     'ClassAdministratorTable',
     'ClassSubjectTable',
-    'ClassWeekdayTable'
+    'ClassWeekdayTable',
+    'ChatTable',
+    'HomeworkTable'
 )

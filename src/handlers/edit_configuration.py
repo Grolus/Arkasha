@@ -11,10 +11,11 @@ from utils.states import ConfigureState, EditConfigureState
 from utils.keyboards import EditConfigureInlineKeyboardMarkup, ConfigureInlineKeyboardMarkup
 from utils.strings import subject_list_to_str, format_answer_start_configure, format_answer_timtable_making
 from utils.handler_factory import ChangingSubjectListHandlerFactory
+from utils.tools import allocate_values_to_nested_list
 from entities import Class, Subject, Timetable
 from storage.tables import ClassTable, AdministratorTable
 
-router = Router()
+router = Router(name='edit_configuretion')
 router.message.filter(ChatTypeFilter('private'))
 EDITORS: dict[str: Class] = {}
 
@@ -41,13 +42,7 @@ def _administrators_to_str(administrators: list[str], creator: str) -> str:
     ])
     return string
 
-def allocate_values_to_nested_list(values: list, length_of_nested_list: int):
-    new_list = []
-    for i, value in enumerate(values):
-        if i % length_of_nested_list == 0:
-            new_list.append([])
-        new_list[-1].append(value)
-    return new_list
+
 
 def timetable_changing_kwargs(weekday_to_change: Weekday, tt_to_change: Timetable, subjects: list, subject_cursor: int):
     kwargs = {'text': format_answer_timtable_making(

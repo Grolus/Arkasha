@@ -41,13 +41,6 @@ print(ClassTable.from_selected(res[0]))
 """
 # test BaseTable.from_selected()
 
-class_ = Class('qwerty', 'grolus', [], [Subject('Русский язык'), Subject('Математика'), Subject('Литература')],
-               {Weekday(0): Timetable([Subject('Русский язык')]),
-                Weekday(1): Timetable([Subject('Математика')])})
-
-class_.start_timetable_updating(Weekday(0))
-class_.update_timetable(Subject('Литература'))
-
-print(class_.timetables)
+AdministratorTable('asfd').get_classes()
 
 

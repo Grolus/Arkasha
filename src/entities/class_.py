@@ -4,7 +4,7 @@ from typing_extensions import Self
 from .subject import Subject
 from .timetable import Timetable, TimetableBuilder
 from utils import Weekday
-from storage.tables import ClassTable, AdministratorTable, SubjectTable
+from storage.tables import ClassTable, AdministratorTable, ChatTable
 from exceptions import AdministratorsListChangingError, TimetableUpdatingError
 
 class Class():
@@ -37,6 +37,16 @@ class Class():
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__!r} object ({self.name!r}, {self.creator!r})>'
     
+    @classmethod
+    def get_by_chat_id(cls, chat_id: int):
+        try:
+            instance = cls.from_table_value(
+                ChatTable.get_by_unique_column(chat_id).values.classID
+            )
+        except ValueError:
+            raise 
+        return instance
+
     def update_name(self, new_name: str):
         self.connected_table_value.values.classname = new_name
         self.name = new_name
@@ -87,6 +97,14 @@ class Class():
              for subject in (self.subjects[:3] if len(self.subjects) > 5 else self.subjects)]
              ) + ((enter + f"<i><b>ещё {len(self.subjects)-3} предмет{'' if len(self.subjects)-3 == 1 else 'а' if str(len(self.subjects))[-1] in (2, 3, 4) else 'ов'}</b></i>") if len(self.subjects) > 5 else '')
         return f"Класс <u><b>{self.name}</b></u>:{enter*2}{subjects_enumerating}{enter*2}Создатель: @{self.creator}{enter}"
+
+    def get_awaible_subject_slots(self, subject: Subject, now_weekday: Weekday) -> list[tuple[Weekday, int, bool]]:
+        slots = []
+        for wd, timetable in self.timetables.items():
+            for i, sj in [(i, sj) for i, sj in enumerate(timetable) if sj == subject]:
+                slots.append((wd, i+1, int(wd) <= int(now_weekday)))
+
+        return slots
 
     @classmethod
     def from_table_value(cls, tableclass: ClassTable) -> Self:
