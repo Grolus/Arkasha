@@ -13,24 +13,17 @@ from exceptions import ValueNotFoundError
 from storage.tables import ChatTable, AdministratorTable, HomeworkTable
 from entities import Class, Subject, Homework
 from utils.states import HomeworkSettingState
-from utils import Weekday, allocate_values_to_nested_list, parse_subjects, parse_one_subject, get_now_week
+from utils import Weekday, allocate_values_to_nested_list, get_now_week
+from parsers import parse_subjects, parse_one_subject
+from utils.strings import slot_to_callback, slot_to_string, callback_to_slot
+
+
+# TODO inline kb include allk subjects (via pages)
 
 
 router = Router()
 router.message.middleware(GetClassMiddleware())
 router.callback_query.middleware(GetClassMiddleware())
-
-def _slot_to_string(slot: tuple[Weekday, int, bool]):
-    weekday, position, is_for_next_week = slot
-    return weekday.name.title() + (" следующей недели" if is_for_next_week else "") + f", {position} урок"
-
-def _slot_to_callback(slot: tuple[Weekday, int, bool]):
-    return f'choosedweekdaynewhw_{int(slot[0])}_{slot[1]}_{int(slot[2])}'
-
-def _callback_to_slot(callback_data: str) -> tuple[Weekday, int, bool]:
-    _, weekday, pos, is_next_week = callback_data.split('_')
-    return int(weekday), int(pos), bool(int(is_next_week))
-
 
 @router.message(Command('new_homework'))
 async def start_new_homework(message: Message, state: FSMContext, class_: Class):
@@ -76,14 +69,14 @@ async def choose_subject_for_new_hw(callback_or_message: CallbackQuery | Message
         )(
         f'На какой день сохранить задание по <i>{choosed_subject.name}</i>?',
         reply_markup=InlineKeyboardMarkup(inline_keyboard=allocate_values_to_nested_list([
-            InlineKeyboardButton(text=_slot_to_string(slot), callback_data=_slot_to_callback(slot))
+            InlineKeyboardButton(text=slot_to_string(slot), callback_data=slot_to_callback(slot, 'choosedweekdaynewhw'))
             for slot in awaible_subject_slots
         ], 1))
     )
     
 @router.callback_query(HomeworkSettingState.choosing_weekday, F.data.startswith('choosedweekdaynewhw_'))
 async def choosed_weekday_handler(callback: CallbackQuery, state: FSMContext, class_: Class):
-    weekday, position, is_for_next_week = _callback_to_slot(callback.data)
+    weekday, position, is_for_next_week = callback_to_slot(callback.data)
     datetime_of_message = callback.message.date
     now_week = get_now_week(datetime_of_message)
     collected_data = await state.get_data()
@@ -91,7 +84,7 @@ async def choosed_weekday_handler(callback: CallbackQuery, state: FSMContext, cl
         collected_data['subject'],
         class_,
         collected_data['text'],
-        Weekday(weekday),
+        weekday,
         now_week + is_for_next_week,
         position,
         datetime_of_message.year

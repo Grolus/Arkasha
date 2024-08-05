@@ -16,7 +16,7 @@ class Weekday:
     __SHORT = ('пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс')
     def __init__(self, weekday_number: Literal[0, 1, 2, 3, 4, 5, 6]):
         if not isinstance(weekday_number, int) or 0 > weekday_number > 6:
-            raise ValueError('Weekday number must be integer in range 0-6')
+            raise ValueError(f'Weekday number must be integer in range 0-6 (not {weekday_number})')
         self.__number = weekday_number
 
     def _all_variants(self) -> list[str]:

@@ -1,12 +1,13 @@
 
 from . import (
     start,
-    new_homework,
     configure,
     edit_configuration,
     debug,
     setclass,
-    new_chat
+    new_chat,
+    new_homework,
+    get_homework,
 )
 
 routers = [
@@ -17,6 +18,8 @@ routers = [
     edit_configuration.router,
     new_chat.router,
     setclass.router,
+    get_homework.router,
+    get_homework.extra_router
 ]
 
 __all__ = ('routers')

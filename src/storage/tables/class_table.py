@@ -3,7 +3,7 @@
 from .base import BaseTable
 from ..connection import DBConection
 
-from utils import Weekday
+from utils.weekday import Weekday
 from logers import database as loger
 
 db = DBConection()
@@ -48,24 +48,31 @@ class ClassTable(BaseTable):
             lessons=lessons
             )
         class_.insert()
-        for weekday in timetables.keys():
+        class_weekday_tables = [
             ClassWeekdayTable(
                 **class_.as_kwargs(),
                 weekday = int(weekday)
-            ).insert()
-        for subject in subject_list:
+            ) for weekday in timetables.keys()
+        ]
+        ClassWeekdayTable.insert_many(class_weekday_tables)
+        subject_tables = [
             ClassSubjectTable(
                 **class_.as_kwargs(),
                 subjectname=str(subject)
-            ).insert()
+            )
+            for subject in subject_list
+        ]
+        ClassSubjectTable.insert_many(subject_tables)
+        lesson_tables = []
         for weekday, timetable in timetables.items():
             for position, subject in enumerate(timetable):
-                LessonTable(
+                lesson_tables.append(LessonTable(
                     **class_.as_kwargs(),
                     subjectname=str(subject),
                     weekday=int(weekday),
                     position=position
-                ).insert()
+                ))
+        LessonTable.insert_many(lesson_tables)
         ClassAdministratorTable(
             **class_.as_kwargs()
             ).insert()

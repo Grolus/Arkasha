@@ -37,12 +37,10 @@ def _format_value_to_db(value: _CanBeInDatabase) -> str:
     if isinstance(value, BaseTable): return str(value.id_)
 
 def _format_condition(values: dict[str: str]):
-    loger.debug(f'Format condition for {values=}')
     condition = ' AND '.join([
         f'{column_name}={_format_value_to_db(value)}' if not value is None else f'ISNULL({column_name})' 
         for column_name, value in values.items()
         ])
-    loger.debug(repr(condition))
     return condition
 
 
@@ -194,9 +192,7 @@ class BaseTable(object):
             if self.check_if_in_db():
                 condition = _format_condition(self.values.as_dict())
                 result = DBConection().query(
-                    f"""SELECT {self._pk_column_name} 
-                    FROM {self._table_name}
-                    WHERE {condition}"""
+                    f"""SELECT {self._pk_column_name} FROM {self._table_name} WHERE {condition}"""
                     )
                 self._id = result[0][0]
             else:
@@ -210,17 +206,32 @@ class BaseTable(object):
             self._is_in_db = not not result
         return self._is_in_db
 
+    def _set_values_to_insert_stringtuple(self) -> str:
+        return f"({', '.join([_format_value_to_db(val) for val in self.values.as_dict().values()])})"
+
     def insert(self) -> bool:
         """Inserts table value to database. If inserted returns `True`"""
         columns = list(self.values.as_dict().keys())
         if not self.check_if_in_db():
             DBConection().query(
                 f"""INSERT INTO {self._table_name} ({', '.join(columns)}) 
-                VALUES ({', '.join([_format_value_to_db(val) for val in self.values.as_dict().values()])})"""
-                )
+                VALUES {self._set_values_to_insert_stringtuple()}"""
+            )
             self._is_in_db = True
             return True
+        loger.info(f'{self._table_name} value ({self.id_}) not inserted, because existing in db')
         return False
+
+    @classmethod
+    def insert_many(cls, table_values: list[Self]):
+        columns = list(cls.get_columns_dict().keys())
+        query = f"INSERT INTO {cls._table_name} ({', '.join(columns)}) VALUES "
+        values_tuples = []
+        for instance in table_values:
+            values_tuples.append(instance._set_values_to_insert_stringtuple())
+        query += ','.join(values_tuples)
+        DBConection().query(query)
+
 
     def as_kwargs(self) -> dict:
         kwargs = {}

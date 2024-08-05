@@ -1,7 +1,9 @@
 
 from entities import Subject, EmptySubject
-from.weekday import Weekday
+from utils.weekday import Weekday
 import Levenshtein as lev
+
+
 
 def parse_one_subject(word: str, subjects: list[Subject]):
     if EmptySubject() in subjects:

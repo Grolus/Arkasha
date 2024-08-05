@@ -3,7 +3,7 @@
 from storage.tables import *
 from storage.connection import DBConection
 from config import DATABASE
-from entities import Subject, Timetable, Class
+from entities import Subject, Timetable, Class, Homework
 from entities.subject import DEFAULT_SUBJECTS
 from utils import Weekday
 
@@ -41,6 +41,12 @@ print(ClassTable.from_selected(res[0]))
 """
 # test BaseTable.from_selected()
 
-AdministratorTable('asfd').get_classes()
+
+print(*Homework.get_recent(
+    Subject('ОБЖ'), 
+    Class.from_table_value(ClassTable.get_by_unique_column('10 А'))
+))
+
+
 
 
