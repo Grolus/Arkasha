@@ -4,16 +4,14 @@ import time
 import datetime
 import logging
 import sys
-from typing import Any, Callable
-from aiogram import Bot, Dispatcher, BaseMiddleware
-from aiogram.types import TelegramObject, InlineKeyboardMarkup, Message
+
+from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from handlers import routers
 from handlers.middlewares import UpdateLogerMiddleware
-from logers import handle as loger
 import config
 
 

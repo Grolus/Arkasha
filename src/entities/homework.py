@@ -38,6 +38,9 @@ class Homework:
     def __str__(self) -> str:
         return f"Домашнее задание по {self.subject.name} на {self.weekday.accusative}, {self.position} урок:\n<b>{self.text}</b>"
 
+    def get_small_string(self) -> str:
+        return f"{self.position}. {self.subject}: <b>{self.text}</b>"
+
     @classmethod
     def get_recent(cls, subject: Subject, class_: Class):
         table_values = HomeworkTable.get_recent_homeworks_for_subject(subject.name, class_.connected_table_value)
@@ -55,3 +58,8 @@ class Homework:
             lesson_table.values.position,
             table_value.values.year
         )   
+    
+    @classmethod
+    def get_all_homeworks_for_day(cls, class_: Class, weekday: Weekday, week: int):
+        table_values = HomeworkTable.get_all_for_day(class_.connected_table_value, weekday, week)
+        return [cls.from_table_value(v) for v in table_values]

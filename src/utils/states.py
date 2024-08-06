@@ -40,3 +40,7 @@ class HomeworkSettingState(StatesGroup):
 class GetHomeworkState(StatesGroup):
     choosing_subject = State()
     choosing_slot = State()
+
+class GetAllHomeworkState(StatesGroup):
+    choosing_day = State()
+

@@ -42,11 +42,7 @@ print(ClassTable.from_selected(res[0]))
 # test BaseTable.from_selected()
 
 
-print(*Homework.get_recent(
-    Subject('ОБЖ'), 
-    Class.from_table_value(ClassTable.get_by_unique_column('10 А'))
-))
-
+print(HomeworkTable.get_all_for_day(ClassTable(_classname='10 А'), 1, 30))
 
 
 

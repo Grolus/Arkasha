@@ -8,6 +8,7 @@ from . import (
     new_chat,
     new_homework,
     get_homework,
+    all_homework
 )
 
 routers = [
@@ -19,7 +20,8 @@ routers = [
     new_chat.router,
     setclass.router,
     get_homework.router,
-    get_homework.extra_router
+    get_homework.extra_router,
+    all_homework.router,
 ]
 
 __all__ = ('routers')

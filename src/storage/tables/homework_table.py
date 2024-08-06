@@ -66,4 +66,11 @@ class HomeworkTable(BaseTable):
         else:
             return []
 
+    @classmethod
+    def get_all_for_day(cls, class_table, weekday, week):
+        result = DBConection().query(
+            f"SELECT * FROM homework JOIN lesson ON homework.lessonID=lesson.idLesson "
+            f"WHERE lesson.classID={class_table.id_} AND lesson.weekday={int(weekday)} AND homework.week={week}"
+        )
+        return [cls.from_selected_row(row) for row in result]
 

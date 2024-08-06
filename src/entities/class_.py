@@ -125,3 +125,13 @@ class Class():
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__!r} object ({self.name!r})>'
     
+    def get_awaible_weekdays_strings(self, now_weekday: Weekday):
+        weekdays_and_strings = []
+        for weekday in self.weekdays:
+            if int(weekday) > int(now_weekday):
+                weekdays_and_strings.append((weekday, weekday.name.title()))
+            else:
+                weekdays_and_strings.append((weekday, weekday.name.title() + ' следующей недели'))
+        weekdays_and_strings.sort(key=lambda x: int(x[0]) + (100 if 'следующей недели' in x[1] else 0))
+        return weekdays_and_strings
+
