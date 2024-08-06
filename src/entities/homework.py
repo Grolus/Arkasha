@@ -39,7 +39,7 @@ class Homework:
         return f"Домашнее задание по {self.subject.name} на {self.weekday.accusative}, {self.position} урок:\n<b>{self.text}</b>"
 
     def get_small_string(self) -> str:
-        return f"{self.position}. {self.subject}: <b>{self.text}</b>"
+        return f"{self.position}. <i>{self.subject}</i>: <b>{self.text}</b>"
 
     @classmethod
     def get_recent(cls, subject: Subject, class_: Class):

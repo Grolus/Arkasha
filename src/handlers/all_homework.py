@@ -34,7 +34,7 @@ async def send_homeworks_handler(callback: CallbackQuery, state: FSMContext, cla
     hw_dict = {(hw.subject, hw.position): hw for hw in homeworks}
     awaible_subjects = list(class_.timetables[weekday])
     strings = [
-        f"{i+1}. {s.name} - не сохранено" 
+        f"{i+1}. <s>{s.name}</s>" 
         if hw_dict.get((s, i+1)) is None or hw_dict[(s, i+1)].position != i+1 else hw_dict[(s, i+1)].get_small_string() 
         for i, s in enumerate(awaible_subjects)
     ]
