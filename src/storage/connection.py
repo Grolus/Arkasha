@@ -10,12 +10,12 @@ class DBConection():
     _connection: mysql.Connection
     _cursor: Cursor
     _c: Cursor
-    def __new__(cls, host: str=..., password: str=..., database: str=..., port: int=..., user: str=...):
+    def __new__(cls, **kwargs):
         if not isinstance(cls.__instance, cls):
-            if all([arg is ... for arg in [host, password, database, port, user]]):
+            if not kwargs:
                 raise ConnectionError(f'{cls.__name__!r} not initiated!')
             instance = super().__new__(cls)
-            instance._connection = mysql.Connection(host=host, password=password, port=port, database=database, user=user)
+            instance._connection = mysql.Connection(**kwargs)
             instance._cursor = instance._connection.cursor()
             instance._c = instance._cursor
             cls.__instance = instance
