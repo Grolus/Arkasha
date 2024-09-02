@@ -1,6 +1,7 @@
 
 from . import (
     start,
+    selfcall,
     configure,
     edit_configuration,
     debug,
@@ -14,6 +15,7 @@ from . import (
 routers = [
     debug.router,
     start.router,
+    selfcall.router,
     new_homework.router,
     configure.router,
     edit_configuration.router,

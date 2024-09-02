@@ -255,7 +255,7 @@ class BaseTable(object):
 
 
     @classmethod
-    def get_by_id(cls, id_: int) -> Self:
+    def get_by_id(cls, id_: int | str) -> Self:
         result = DBConection().query(f"SELECT * FROM {cls._table_name} WHERE {cls.get_pk_column_name()}={id_}")
         return cls.from_selected_row(result[0])
     

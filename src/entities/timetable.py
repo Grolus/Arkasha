@@ -76,7 +76,7 @@ class TimetableBuilder:
         self.raw_timetables = {wd: [EmptySubject() for _ in range(amount)] for wd in self.weekdays}
 
     def next_subject(self, subject: Subject) -> Literal[0, 1, 2]:
-        """Returns 0 if its just next subject, 1 if its next day, 2 if its end"""
+        """Returns 0 if it`s just next subject, 1 if it`s next day, 2 if its end"""
         self.raw_timetables[self.weekday_cursor][self.subject_cursor] = subject
         self.subject_cursor += 1
         if self.subject_cursor == self.lessons:
