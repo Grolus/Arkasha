@@ -1,5 +1,6 @@
 **/venv
 idea.txt
+TODO.txt
 **/__pycache__
 config.json
 **/logs
