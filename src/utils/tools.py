@@ -8,7 +8,7 @@ def allocate_values_to_nested_list(values: list, length_of_nested_list: int):
         new_list[-1].append(value)
     return new_list
 
-def get_now_week(dt: datetime.datetime) -> int:
+def get_now_week(dt: datetime.datetime | datetime.date) -> int:
     return (
         datetime.datetime(dt.year, 1, 1).weekday() + 
         dt.timetuple().tm_yday

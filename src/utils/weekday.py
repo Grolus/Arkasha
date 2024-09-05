@@ -14,10 +14,17 @@ class Weekday:
     __INSTRUMENTAL = ('понедельником', 'вторником', 'средой', 'четвергом', 'пятницей', 'субботой', 'воскресением')
     __PREPOSITIONAL = ('понедельнике', 'вторнике', 'среде', 'четверге', 'пятнице', 'субботе', 'воскресении')
     __SHORT = ('пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс')
-    def __init__(self, weekday_number: Literal[0, 1, 2, 3, 4, 5, 6]):
+
+    __instances = [None] * 7
+    def __new__(cls, weekday_number: Literal[0, 1, 2, 3, 4, 5, 6]):
         if not isinstance(weekday_number, int) or 0 > weekday_number > 6:
             raise ValueError(f'Weekday number must be integer in range 0-6 (not {weekday_number})')
-        self.__number = weekday_number
+        if instance := cls.__instances[weekday_number]:
+            return instance
+        instance = super(cls).__new__()
+        cls.__instances[weekday_number] = instance
+        instance.__number = weekday_number
+        return instance
 
     def _all_variants(self) -> list[str]:
         return [

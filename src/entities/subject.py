@@ -68,7 +68,8 @@ class Subject(BaseSubject):
             raise DecodingSubjectError('Can`t decode subject "%s"' % coded_subject)
         subject = Subject._instances[int(coded_subject)]
         return subject
-    
+    def get_groups(self, class_):
+        return class_.get_subject_groups(self)
 
 
 DEFAULT_SUBJECTS_NAMES = [

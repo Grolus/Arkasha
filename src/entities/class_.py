@@ -4,7 +4,7 @@ from typing_extensions import Self
 from .subject import Subject
 from .timetable import Timetable, TimetableBuilder
 from utils import Weekday
-from storage.tables import ClassTable, AdministratorTable, ChatTable
+from storage.tables import ClassTable, AdministratorTable, ChatTable, SubjectTable
 from exceptions import AdministratorsListChangingError, TimetableUpdatingError
 
 class Class():
@@ -23,7 +23,7 @@ class Class():
         self.administrators = administrators
         self.subjects = subjects
         self.timetables = timetables
-        self.weekdays = list(timetables.keys())
+        self.weekdays = sorted(timetables.keys(), key=lambda x: int(x))
         self.editor = self.creator
         self.__is_updating_timetable = False
         if connected_table_value is None:
@@ -74,7 +74,6 @@ class Class():
         )
         self.__is_updating_timetable = True
 
-
     def update_timetable(self, subject: Subject):
         if not self.__is_updating_timetable:
             raise TimetableUpdatingError(f'Updating timetable not started for class {self!r}')
@@ -103,8 +102,12 @@ class Class():
         for wd, timetable in self.timetables.items():
             for i, sj in [(i, sj) for i, sj in enumerate(timetable) if sj == subject]:
                 slots.append((wd, i+1, int(wd) <= int(now_weekday)))
-
         return slots
+
+    def weekday_delta(self, now_weekday: Weekday, delta: int):
+        now_weekday_index = self.weekdays.index(now_weekday)
+        result_weekday_index = (now_weekday_index + delta) % len(self.weekdays)
+        return self.weekdays[result_weekday_index]
 
     @classmethod
     def from_table_value(cls, tableclass: ClassTable) -> Self:
@@ -134,4 +137,8 @@ class Class():
                 weekdays_and_strings.append((weekday, weekday.name.title() + ' следующей недели'))
         weekdays_and_strings.sort(key=lambda x: int(x[0]) + (100 if 'следующей недели' in x[1] else 0))
         return weekdays_and_strings
+
+    def get_subject_groups(self, subject: Subject):
+        return self.connected_table_value.get_subject_groups(SubjectTable(subject.name))
+
 

@@ -30,7 +30,7 @@ async def get_homework_start(message: Message, state: FSMContext, class_: Class)
         reply_markup=InlineKeyboardMarkup(inline_keyboard=allocate_values_to_nested_list([
             InlineKeyboardButton(text=sj.name, callback_data=f'choosedsubjectgethw_{sj.encode()}') 
             for sj in probably_subjects
-            ], 3 
+            ], 3
         ))
     )
 

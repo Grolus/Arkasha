@@ -6,20 +6,27 @@ from utils import Weekday
 from storage.tables import HomeworkTable, LessonTable
 
 
+def is_position_needed(class_: Class, subject: Subject, weekday: Weekday):
+    return list(class_.timetables[weekday]).count(subject) > 1
 
 class Homework:
 
     def __init__(
         self, subject: Subject, class_: Class, text: str, 
-        weekday: Weekday, week: int, position: int, year: int=datetime.date.today().year
+        weekday: Weekday, week: int, position: int | None=None, year: int=datetime.date.today().year # it`s ugly, but it`s working 
     ):
         self.subject = subject
         self.class_ = class_
         self.text = text
         self.weekday = weekday
         self.week = week
-        self.position = position
         self.year = year
+        if position is None:
+            if not is_position_needed(self.class_, self.subject, self.weekday):
+                self.position = self.class_.timetables[self.weekday].position(self.subject)
+        else:
+            self.position = position
+        
 
     def save(self):
         HomeworkTable.save_new_homework(self)

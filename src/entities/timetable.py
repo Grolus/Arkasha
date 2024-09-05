@@ -24,6 +24,9 @@ class Timetable:
     def __contains__(self, sj):
         return sj in self.lessons
     
+    def position(self, subject: Subject):
+        return self.lessons.index(subject) + 1
+
     def update_lesson(self, class_: 'Class', new_subject: Subject): # type: ignore
         pos = class_._subject_cursor
         old_subject = self[pos]

@@ -89,8 +89,19 @@ class ClassTable(BaseTable):
     
     def get_weekdays(self) -> list[Weekday]:
         from . import ClassWeekdayTable
-        weekdays = [Weekday(i[0]) for i in db.query(f"SELECT weekday FROM {ClassWeekdayTable._table_name} WHERE classID={self.id_} ORDER BY weekday")]
+        weekdays = [
+            Weekday(i[0]) 
+            for i in db.query(f"SELECT weekday FROM {ClassWeekdayTable._table_name} WHERE classID={self.id_} ORDER BY weekday")
+        ]
         return weekdays
+
+    def get_subject_groups(self, table_subject: 'SubjectTable') -> int: # type: ignore
+        from . import ClassSubjectTable
+        result = db.query(
+            f"SELECT groups FROM {ClassSubjectTable._table_name} WHERE classID={self.id_} AND subjectID={table_subject.id_}"
+        )
+        groups = result[0][0]
+        return groups
 
     def get_all_timetables(self) -> dict[Weekday: list['SubjectTable']]: # type: ignore
         timetables = {

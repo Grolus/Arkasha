@@ -50,16 +50,13 @@ async def handle_homework_text(message: Message, state: FSMContext, class_: Clas
 
 @router.message(HomeworkSettingState.choosing_subject)
 @router.callback_query(HomeworkSettingState.choosing_subject, F.data.startswith('choosedsubjectnewhw_'))
-async def choose_subject_for_new_hw(callback_or_message: CallbackQuery | Message, state: FSMContext, class_: Class):
+async def choose_subject_for_new_hw(callback_or_message: CallbackQuery | Message, state: FSMContext, class_: Class, weekday: Weekday):
 
     if isinstance(callback_or_message, CallbackQuery):
         choosed_subject = Subject.decode(callback_or_message.data.split('_')[1])
-        now_datetime = callback_or_message.message.date
     else:
         choosed_subject = parse_one_subject(callback_or_message.text, class_.subjects)
-        now_datetime = callback_or_message.date
-    now_weekday = now_datetime.weekday()
-    awaible_subject_slots = class_.get_awaible_subject_slots(choosed_subject, now_weekday)
+    awaible_subject_slots = class_.get_awaible_subject_slots(choosed_subject, weekday)
     await state.update_data({"subject": choosed_subject})
     await state.set_state(HomeworkSettingState.choosing_weekday)
     return await (
@@ -75,19 +72,17 @@ async def choose_subject_for_new_hw(callback_or_message: CallbackQuery | Message
     )
     
 @router.callback_query(HomeworkSettingState.choosing_weekday, F.data.startswith('choosedweekdaynewhw_'))
-async def choosed_weekday_handler(callback: CallbackQuery, state: FSMContext, class_: Class):
+async def choosed_weekday_handler(callback: CallbackQuery, state: FSMContext, class_: Class, week: int):
     weekday, position, is_for_next_week = callback_to_slot(callback.data)
-    datetime_of_message = callback.message.date
-    now_week = get_now_week(datetime_of_message)
     collected_data = await state.get_data()
     collected_homework = Homework(
         collected_data['subject'],
         class_,
         collected_data['text'],
         weekday,
-        now_week + is_for_next_week,
+        week + is_for_next_week,
         position,
-        datetime_of_message.year
+        callback.message.date.year
     )
     HomeworkTable.save_new_homework(collected_homework)
     await state.clear()

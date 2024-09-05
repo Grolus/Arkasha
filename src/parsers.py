@@ -3,9 +3,17 @@ from entities import Subject, EmptySubject
 from utils.weekday import Weekday
 import Levenshtein as lev
 
+MAX_SUBJECT_DIST = 5
 
 
-def parse_one_subject(word: str, subjects: list[Subject]):
+
+def is_subject_word(word: str, subjects: list[Subject]):
+    subject, dist = parse_one_subject(word, subjects, return_dist=True)
+    if dist <= MAX_SUBJECT_DIST:
+        return subject
+    return None
+
+def parse_one_subject(word: str, subjects: list[Subject], *, return_dist: bool=False) -> Subject:
     if EmptySubject() in subjects:
         subjects.remove(EmptySubject())
     min_dist = float('inf')
@@ -15,6 +23,8 @@ def parse_one_subject(word: str, subjects: list[Subject]):
         if dist < min_dist:
             min_dist = dist
             min_dist_subject = sj
+    if return_dist:
+        return min_dist_subject, min_dist
     return min_dist_subject
 
 def parse_subjects(text: str, subjects: list[Subject]) -> list[Subject]:
