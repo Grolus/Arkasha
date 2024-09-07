@@ -2,30 +2,32 @@
 from entities import Subject, EmptySubject
 from .weekday import Weekday
 
-def subject_list_to_str(subject_list: list[Subject | None], *,
+def subject_list_to_str(subject_list: list[Subject | None | list[Subject]], *,
                          html_tags: str='', separator: str='\n', 
                          numbered: bool=False, decorate_numbers: bool=False, start_numbers: int=1,
                          subject_cursor: int=None):
     """Converts list of subjects to string (subjects names separated by '\\n')\n
     :param subject_list: list of subjects to print (If subject_list[i] is None, '...' will be printed)
     :param html_tags: (Optional) html-tags to decorate final string (e. g. `tags='bu'` => `'<b><u>{subjects_to_print}</u></b>)'`"""
+    
     subjects_to_print = separator.join(
-        [(f'{start_numbers+i}. ' if numbered and not decorate_numbers else '') + foramat_html_tags(
+        [(f'{start_numbers+i}. ' if numbered and not decorate_numbers else '') + format_html_tags(
             ('bu' if subject_cursor == i else html_tags), 
             (f'{start_numbers+i}. ' if numbered and decorate_numbers else '') + 
-                (subject.name if not subject is None else '...')
+                (subject.name if isinstance(subject, (Subject, EmptySubject)) 
+                    else ' | '.join([sj.name for sj in subject]))
             )
          for i, subject in enumerate(subject_list)]
         )
     return subjects_to_print
 
-def format_answer_timtable_making(weekday: Weekday, timetable: list[Subject], posttext: str='', cursor: int=None) -> str:
+def format_answer_timtable_making(weekday: Weekday, timetable: list[Subject | list[Subject]], posttext: str='', cursor: int=None) -> str:
     answer = f'Составляем расписание на <b><u>{weekday.genetive}</u></b>. \n\n' + \
-    subject_list_to_str(timetable, html_tags='i', numbered=True, subject_cursor=cursor) + '\n\n' + \
-    (posttext or f'Нажимайте на предметы в нужном порядке или на "{EmptySubject.name}", если в этот момент нет урока.')
+        subject_list_to_str(timetable, html_tags='i', numbered=True, subject_cursor=cursor) + '\n\n' + \
+        (posttext or f'Нажимайте на предметы в нужном порядке или на "{EmptySubject.name}", если в этот момент нет урока.')
     return answer
 
-def foramat_html_tags(html_tags: str, text: str) -> str:
+def format_html_tags(html_tags: str, text: str) -> str:
     """Decorating html-tags to right format (e. g. `html_tags='bu'` => `'<b><u>{text}</u></b>)'`"""
     begin = ''.join([f'<{tag}>' for tag in html_tags])
     end = ''.join([f'</{tag}>' for tag in html_tags[::-1]])

@@ -49,46 +49,69 @@ class Timetable:
         return cls(subjects)
 
 class TimetableBuilder:
-    lessons: int
+    lessons_amount: int
     weekdays: list[Weekday]
     weekday_cursor: Weekday
     _end_after_one_day = False
     def __init__(
-        self, *, 
-        pre_timetables: dict[Weekday: Timetable] | None=None, 
-        starting_weekday: Weekday | None=None, 
-        build_only_starting_weekday: bool | None=None
+        self, 
+        lessons_amount: int,
+        weekdays: list[Weekday]
     ):
+        self.lessons_amount = lessons_amount
+        self.weekdays = weekdays
         self.__wd_cursor = 0
         self.subject_cursor = 0
-        if not pre_timetables is None:
-            self.lessons = max(map(len, list(pre_timetables.values())))
-            self.weekdays = list(pre_timetables.keys())
-            self.weekday_cursor = starting_weekday or self.weekdays[0]
-            self.raw_timetables = pre_timetables
-            self._end_after_one_day = True
+        self.group_cursor = 0
+        self.raw_timetables = {wd: [EmptySubject() for _ in range(self.lessons_amount)] for wd in self.weekdays}
+
+    @classmethod
+    def from_existing_timetable(
+        cls, 
+        pre_timetables: 
+        dict[Weekday: Timetable], starting_weekday: Weekday | None=None
+    ):
+        self = cls.__new__(cls)
+        self.lessons_amount = max(map(len, list(pre_timetables.values())))
+        self.weekdays = list(pre_timetables.keys())
+        self.weekday_cursor = starting_weekday or self.weekdays[0]
+        self.subject_cursor = 0
+        self.group_cursor = 0
+        self.raw_timetables = pre_timetables
+        self._end_after_one_day = True
+        return self
+
+    @property
+    def weekday_cursor(self):
+        return self.weekdays[self.__wd_cursor]
+
+    def next_subject(self, subject: Subject, subject_groups: int=1):
+        is_subject_grouped = subject_groups > 1
+        # cursors: subject, group, weekday
+        if not is_subject_grouped:
+            if self.group_cursor != 0:
+                raise ValueError(f'Expexted grouped subject, got {subject} ({subject_groups})')
+            else:
+                self.current_timetable[self.subject_cursor] = subject
+                return self.up_subject_cursor()
         else:
-            self.raw_timetables = {}
-
-    def set_weekdays(self, weekdays: list[Weekday]):
-        self.weekdays = weekdays
-        self.weekday_cursor = weekdays[0]
-
-    def set_lessons_amount(self, amount: int):
-        self.lessons = amount
-        self.raw_timetables = {wd: [EmptySubject() for _ in range(amount)] for wd in self.weekdays}
-
-    def next_subject(self, subject: Subject) -> Literal[0, 1, 2]:
-        """Returns 0 if it`s just next subject, 1 if it`s next day, 2 if its end"""
-        self.raw_timetables[self.weekday_cursor][self.subject_cursor] = subject
+            if self.group_cursor == 0:
+                self.current_timetable[self.subject_cursor] = [subject]
+                self.group_cursor += 1
+            else:
+                self.current_timetable[self.subject_cursor].append(subject)
+                self.group_cursor += 1
+                if self.group_cursor >= subject_groups: # is end of grouped lesson building
+                    self.group_cursor = 0
+                    return self.up_subject_cursor()
+                
+    def up_subject_cursor(self):
         self.subject_cursor += 1
-        if self.subject_cursor == self.lessons:
+        if self.subject_cursor >= self.lessons_amount:
             self.subject_cursor = 0
-            if self._next_weekday():
-                return 2
-            return 1
+            return self._next_weekday() + 1
         return 0
-
+        
     def _next_weekday(self):
         if self._end_after_one_day:
             return True
@@ -100,6 +123,19 @@ class TimetableBuilder:
         self.weekday_cursor = self.weekdays[self.__wd_cursor]
         return flag
     
+    def get_next_weekday(self):
+        if self.__wd_cursor < len(self.weekdays):
+            return self.weekdays[self.__wd_cursor + 1]
+        return None
+
+    def weekday_again(self):
+        self.__wd_cursor -= 1
+        self.raw_timetables[self.weekday_cursor] = [EmptySubject() for _ in range(self.lessons_amount)]
+
+    @property
+    def current_timetable(self) -> list[Subject]:
+        return self.raw_timetables[self.weekday_cursor]
+
     def to_dict(self):
         return {wd: Timetable(sj_list) for wd, sj_list in self.raw_timetables.items()}
 
@@ -107,6 +143,6 @@ class TimetableBuilder:
         return self.raw_timetables[wd]
     
     def __delitem__(self, wd: Weekday):
-        self.raw_timetables[wd] = [EmptySubject() for _ in range(self.lessons)]
+        self.raw_timetables[wd] = [EmptySubject() for _ in range(self.lessons_amount)]
         
 

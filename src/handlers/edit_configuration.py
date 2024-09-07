@@ -17,7 +17,7 @@ from storage.tables import ClassTable, AdministratorTable
 
 router = Router(name='edit_configuretion')
 router.message.filter(ChatTypeFilter('private'))
-EDITORS: dict[str: Class] = {}
+EDITORS = {}
 
 
 # TODO чтобы нельзя было удалить главного админа
@@ -53,12 +53,12 @@ def timetable_changing_kwargs(weekday_to_change: Weekday, tt_to_change: Timetabl
         'reply_markup': InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text='Пропустить', callback_data=f'ttchangingsubject_{tt_to_change[subject_cursor].encode()}')]
-                ] + allocate_values_to_nested_list(
-                    [
+            ] + allocate_values_to_nested_list(
+                [
                     InlineKeyboardButton(text=sj.name, callback_data=f'ttchangingsubject_{sj.encode()}')
                     for sj in subjects
-                    ], 3
-                )
+                ], 3
+            )
         )}
     return kwargs
 
@@ -157,13 +157,13 @@ ChangingSubjectListHandlerFactory(
     EditConfigureState.changing_subject_list,
     EditConfigureState.choosing_value_to_edit,
     lambda username: EDITORS[username].subjects,
+    lambda username, subject, groups: EDITORS[username].set_subject_groups(subject, groups),
     after_message_kwargs_getter=choosing_value_to_edit_kwargs
 )
 
 
 @router.callback_query(EditConfigureState.changing_admin_list, F.data.startswith('adminlistchange'))
-@router.callback_query(EditConfigureState.adminlist_changed, F.data == 'adminlistchange_add')
-@router.callback_query(EditConfigureState.adminlist_changed, F.data == 'adminlistchange_remove')
+@router.callback_query(EditConfigureState.adminlist_changed, F.data == 'adminlistchange_add' | F.data == 'adminlistchange_remove')
 async def changed_admin_list(callback: CallbackQuery, state: FSMContext):
 
     action = callback.data.split('_')[1]
@@ -232,13 +232,15 @@ async def timetable_changing(callback: CallbackQuery, state: FSMContext):
     class_.start_timetable_updating(weekday_to_change)
     subject_cursor = class_._tt_updating_builder.subject_cursor
     kb = [
-                [InlineKeyboardButton(text='Пропустить', callback_data=f'ttchangingsubject_{tt_to_change[subject_cursor].encode()}')],
-                *allocate_values_to_nested_list(
-                    [
-                    InlineKeyboardButton(text=sj.name, callback_data=f'ttchangingsubject_{sj.encode()}')
-                    for sj in class_.subjects
-                    ], 3
-                )]
+        [InlineKeyboardButton(
+            text='Пропустить', 
+            callback_data=f'ttchangingsubject_{tt_to_change[subject_cursor].encode()}'
+        )],
+        *allocate_values_to_nested_list([
+            InlineKeyboardButton(text=sj.name, callback_data=f'ttchangingsubject_{sj.encode()}')
+            for sj in class_.subjects
+        ], 3)
+    ]
     await callback.message.edit_text(
         format_answer_timtable_making(
             weekday_to_change, list(tt_to_change), 

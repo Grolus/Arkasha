@@ -11,7 +11,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from handlers import routers
-from handlers.middlewares import UpdateLogerMiddleware, GetClassMiddleware
+from handlers.middlewares import UpdateLogerMiddleware, GetWeekAndWeekdayMiddleware
 import config
 
 
@@ -22,7 +22,7 @@ async def main() -> None:
                            default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     dp.update.outer_middleware(UpdateLogerMiddleware())
-    dp.update.middleware(GetClassMiddleware())
+    dp.update.middleware(GetWeekAndWeekdayMiddleware())
     
     dp.include_routers(*routers)
     

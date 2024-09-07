@@ -28,7 +28,7 @@ class ClassTable(BaseTable):
         return result[0]
 
     @classmethod
-    def validate_name(cls, classname: str):
+    def is_valid_name(cls, classname: str):
         "Validates name `classname` for table `class`. Returns `True`, if name not exists in table"
         result = DBConection().query(f"SELECT * FROM {cls._table_name} WHERE classname='{classname}'")
         return not result
@@ -46,7 +46,7 @@ class ClassTable(BaseTable):
             classname=classname,
             username=creator_username,
             lessons=lessons
-            )
+        )
         class_.insert()
         class_weekday_tables = [
             ClassWeekdayTable(
@@ -144,5 +144,8 @@ class ClassTable(BaseTable):
 
     def remove_administrator(self, removed_admin_username: str):
         from . import ClassAdministratorTable, AdministratorTable
-        DBConection().query(f"DELETE FROM {ClassAdministratorTable._table_name} WHERE classID={self.id_} AND administratorID={AdministratorTable(removed_admin_username).id_}")
+        db.query(f"DELETE FROM {ClassAdministratorTable._table_name} WHERE classID={self.id_} AND administratorID={AdministratorTable(removed_admin_username).id_}")
+
+    def set_subject_groups(self, table_subject, groups: int):
+        db.query(f"UPDATE classsubject SET groups={groups} WHERE classID={self.id_} AND subjectID={table_subject.id_}")
 

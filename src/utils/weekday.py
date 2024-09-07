@@ -21,7 +21,7 @@ class Weekday:
             raise ValueError(f'Weekday number must be integer in range 0-6 (not {weekday_number})')
         if instance := cls.__instances[weekday_number]:
             return instance
-        instance = super(cls).__new__()
+        instance = super().__new__(cls)
         cls.__instances[weekday_number] = instance
         instance.__number = weekday_number
         return instance

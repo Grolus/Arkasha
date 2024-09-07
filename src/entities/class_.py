@@ -141,4 +141,5 @@ class Class():
     def get_subject_groups(self, subject: Subject):
         return self.connected_table_value.get_subject_groups(SubjectTable(subject.name))
 
-
+    def set_subject_groups(self, subject: Subject, groups: int):
+        self.connected_table_value.set_subject_groups(subject.connected_table_value, groups)

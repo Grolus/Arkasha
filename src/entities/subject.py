@@ -1,6 +1,8 @@
 
 from exceptions import SubjectError, DecodingSubjectError
 
+from storage.tables import SubjectTable
+
 from abc import abstractmethod
 
 __all__ = (
@@ -50,12 +52,14 @@ class EmptySubject(BaseSubject):
 
 class Subject(BaseSubject):
     _instances = []
+    connected_table_value: SubjectTable
     def __new__(cls, name):
         for instance in cls._instances:
             if name == instance.name:
                 return instance
         instance = super().__new__(cls)
         instance.name = name
+        instance.connected_table_value = SubjectTable(instance.name)
         cls._instances.append(instance)
         return instance
     def encode(self) -> str:
