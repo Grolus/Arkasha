@@ -9,6 +9,7 @@ from exceptions import AdministratorsListChangingError, TimetableUpdatingError
 
 class Class():
     connected_table_value: ClassTable
+    _groups_dict: dict = None
     def __init__(
             self, 
             name: str, 
@@ -143,3 +144,11 @@ class Class():
 
     def set_subject_groups(self, subject: Subject, groups: int):
         self.connected_table_value.set_subject_groups(subject.connected_table_value, groups)
+
+    def get_groups_dict(self):
+        if not self._groups_dict:
+            self._groups_dict = {}
+            for subject in self.subject:
+                self._groups_dict[subject] = self.get_subject_groups(subject)
+        return self._groups_dict
+

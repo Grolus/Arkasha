@@ -31,9 +31,7 @@ def _subject_to_callback(subject: Subject, callback_data_prefix: str) -> str:
     return f"{callback_data_prefix}_{subject.name}"
 
 def _parse_new_subjects(text: str, existing_subjects: list[Subject]) -> tuple[list[Subject], list[Subject]]:
-    new_subjects_names = [i for i in map(str.strip, text.split(',')) if i] # not-empty-string words
-    for i in range(len(new_subjects_names)):
-        new_subjects_names[i] = new_subjects_names[i][0].upper() + new_subjects_names[i][1:]
+    new_subjects_names = [i.capitalize() for i in map(str.strip, text.split(',')) if i] # not-empty-string words
     subjects_to_add, already_exists_subjects = _new_subjects_master(new_subjects_names, existing_subjects)
     return subjects_to_add, already_exists_subjects
 
@@ -67,8 +65,7 @@ class ChangingSubjectListHandlerFactory:
             after_message_text: str | None=None,
             after_message_reply_markup: InlineKeyboardMarkup | None=None, 
             after_message_kwargs_getter: Callable[[CallbackQuery | Message | None], 
-                                                  dict[Literal['text']: str, 
-                                                       Literal['reply_markup']: InlineKeyboardMarkup | None]] | None=None
+                                                  dict] | None=None
             ):
         """Handler generator for changing subject list.\n
             :param router: `Router` object to register handlers

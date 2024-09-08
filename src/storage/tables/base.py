@@ -45,7 +45,7 @@ def _format_condition(values: dict[str: str]):
 
 
 class Column:
-    def __init__(self, name: str, datatype: Type, is_nullable: bool=False, default_value: Any=None):
+    def __init__(self, name: str, datatype: Type, is_nullable: bool=False, default_value: _CanBeInDatabase=None):
         self.name = name
         self.datatype = datatype
         self.is_fk = issubclass(datatype, BaseTable)
@@ -61,7 +61,7 @@ class Column:
         else: 
             return False
         
-    def validate(self, value: Any):
+    def validate(self, value: _CanBeInDatabase):
         return isinstance(value, self.datatype)
             
     def get_default(self):
@@ -224,14 +224,13 @@ class BaseTable(object):
 
     @classmethod
     def insert_many(cls, table_values: list[Self]):
-        columns = list(cls.get_columns_dict().keys())
+        columns = [f'`{col}`' for col in cls.get_columns_dict().keys()]
         query = f"INSERT INTO {cls._table_name} ({', '.join(columns)}) VALUES "
         values_tuples = []
         for instance in table_values:
             values_tuples.append(instance._set_values_to_insert_stringtuple())
         query += ','.join(values_tuples)
         DBConection().query(query)
-
 
     def as_kwargs(self) -> dict:
         kwargs = {}

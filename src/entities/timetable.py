@@ -98,6 +98,7 @@ class TimetableBuilder:
             if self.group_cursor == 0:
                 self.current_timetable[self.subject_cursor] = [subject]
                 self.group_cursor += 1
+                return -1
             else:
                 self.current_timetable[self.subject_cursor].append(subject)
                 self.group_cursor += 1
@@ -120,7 +121,6 @@ class TimetableBuilder:
         if self.__wd_cursor == len(self.weekdays):
             self.__wd_cursor = 0
             flag = True
-        self.weekday_cursor = self.weekdays[self.__wd_cursor]
         return flag
     
     def get_next_weekday(self):
@@ -135,6 +135,8 @@ class TimetableBuilder:
     @property
     def current_timetable(self) -> list[Subject]:
         return self.raw_timetables[self.weekday_cursor]
+
+
 
     def to_dict(self):
         return {wd: Timetable(sj_list) for wd, sj_list in self.raw_timetables.items()}

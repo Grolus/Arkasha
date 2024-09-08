@@ -61,7 +61,7 @@ async def start_configure(message: Message, state: FSMContext):
         await state.set_state(ConfigureState.edit_or_new_class_choosing)
         return await message.answer(
             format_answer_start_configure(len(existed_users_classes)),
-            reply_markup=InlineMarkup.get_edit_or_new_cfg_choosing_markup(existed_users_classes)
+            reply_markup=InlineMarkup.get_edit_or_new_cfg_choosing_markup(existed_users_classes, 'editcfgbegin', 'newcfgbegin')
         )
     else:
         await state.set_state(ConfigureState.typing_class_name)
@@ -104,7 +104,7 @@ async def choosen_study_type(message: Message, state: FSMContext):
         _StateData.weekdays: weekdays
     })
     weekdays_enumerating_string = ", ".join([wd.accusative for wd in weekdays]) # понедельник, среду, ...
-    subjects = await state.get_data()[_StateData.subjects] # default subjects for a while
+    subjects = (await state.get_data())[_StateData.subjects] # default subjects for a while
     await state.set_state(ConfigureState.changing_subjects_list)
     return await message.answer(format_answer_changed_subject_list(
         f'Вы учитесь в {weekdays_enumerating_string}. ' + 
@@ -142,37 +142,43 @@ async def start_timetable_making(message: Message, state: FSMContext):
         ])
     )
 
-@router.callback_query(ConfigureState.making_timetable, F.data == 'timetable_started' | F.data.startswith('ttsubject_'))
+@router.callback_query(ConfigureState.making_timetable, (F.data == 'timetable_started') | (F.data.startswith('ttsubject_')))
 async def making_timetable(callback: CallbackQuery, state: FSMContext):
     
     data = await state.get_data()
     subjects = data[_StateData.subjects]
     subject_groups = data[_StateData.subject_groups]
     builder = data[_StateData.timetable_builder]
-
+    result_code = 0
+    weekday_cursor = builder.weekday_cursor
     if callback.data.startswith('ttsubject_'):
         new_subject = Subject.decode(callback.data.split('_')[1])
-        result_code = builder.next_subject(new_subject, subject_groups[new_subject]) 
+        try:
+            result_code = builder.next_subject(new_subject, subject_groups.get(new_subject, 1)) 
+        except ValueError:
+            result_code = 0
 
+    
     subject_cursor = builder.subject_cursor
-    weekday_cursor = builder.weekday_cursor
-
+    
     match result_code:
-        case 0: 
+        case -1 | 0: 
             answer = format_answer_timtable_making(
                 weekday_cursor, builder.current_timetable, 
                 f'Нажмите на предмет, который станет {subject_cursor+1}-м уроком в {weekday_cursor.accusative}',
                 subject_cursor
             )
             kb = InlineMarkup.get_all_subjects_markup(subjects, 'ttsubject')
+            next_state = ConfigureState.making_timetable
         case 1 | 2:
             is_last_day = result_code == 2
             answer = format_answer_timtable_making(
-                weekday_cursor, builder.current_timetable,
+                weekday_cursor, builder.raw_timetables[weekday_cursor],
                 f'Перепроверьте расписание на {weekday_cursor.accusative} и выберите действие'
             )
-            kb = InlineMarkup.get_timetable_ending_markup(weekday_cursor, builder.get_next_weekday(), is_last_day)
-    await state.set_state(ConfigureState.ending_timetable)
+            kb = InlineMarkup.get_timetable_ending_markup(weekday_cursor, builder.weekday_cursor, is_last_day)
+            next_state = ConfigureState.ending_timetable
+    await state.set_state(next_state)
     return await callback.message.edit_text(answer, reply_markup=kb)
 
 @router.callback_query(ConfigureState.ending_timetable, F.data.startswith('ttend_'))

@@ -1,8 +1,8 @@
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from ..weekday import Weekday
-from entities import Subject, EmptySubject
 from ..tools import allocate_values_to_nested_list
+from entities import Subject, EmptySubject, Class
 
 def _subject_to_button(subject: Subject | EmptySubject, callback_data_prefix: str) -> InlineKeyboardButton:
     return InlineKeyboardButton(text=str(subject), callback_data=f'{callback_data_prefix}_{subject.encode()}')
@@ -50,11 +50,12 @@ class ConfigureInlineKeyboardMarkup:
                 row.remove(None)
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
     
-    def get_edit_or_new_cfg_choosing_markup(existed_classes):
+    def get_edit_or_new_cfg_choosing_markup(existed_classes: list[Class], edit_cfg_callback_data_prefix: str, new_cfg_callback_data: str):
         return InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text=f'Класс {class_.values.classname}', callback_data=f'editcfgbegin_{class_.id_}') 
-                 ] for class_ in existed_classes
-            ] + [[InlineKeyboardButton(text='Создать новый класс', callback_data='newcfgbegin')]])
+                [InlineKeyboardButton(
+                    text=f'Класс {class_.values.classname}', callback_data=f'{edit_cfg_callback_data_prefix}_{class_.id_}')] 
+                for class_ in existed_classes
+            ] + [[InlineKeyboardButton(text='Создать новый класс', callback_data=new_cfg_callback_data)]])
 
 class EditConfigureInlineKeyboardMarkup:
     choose_value_to_edit = InlineKeyboardMarkup(inline_keyboard=[
