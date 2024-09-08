@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKe
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 
-from .middlewares import GetClassMiddleware
+from ..middlewares import GetClassMiddleware
 from entities import Class, Homework
 from utils.states import GetAllHomeworkState
 from utils import Weekday, get_now_week

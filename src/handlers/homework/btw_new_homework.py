@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 
-from .middlewares import GetClassMiddleware
+from ..middlewares import GetClassMiddleware
 from parsers import is_subject_word
 from entities import Class, Homework, Subject
 from entities.homework import is_position_needed
@@ -27,6 +27,7 @@ def get_closest_slot(class_: Class, subject: Subject, now_weekday: Weekday):
     closest_slot = (closest_weekday, closest_pos, is_for_next_week)
     return closest_slot
     
+# По биологии читать параграф 2, рис. 5, творческая работа
 
 @router.message(F.text.regexp(r'(?i)по /w* .*'))
 async def btw_new_homework_found(message: Message, state: FSMContext, class_: Class, week: int, weekday: Weekday):

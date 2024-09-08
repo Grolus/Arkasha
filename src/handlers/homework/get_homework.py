@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKe
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 
-from .middlewares import GetClassMiddleware
+from ..middlewares import GetClassMiddleware
 from entities import Class, Subject, Homework
 from utils import allocate_values_to_nested_list, Weekday, get_now_week
 from utils.states import GetHomeworkState
@@ -19,7 +19,6 @@ router = Router(name='get_homework')
 router.message.middleware(GetClassMiddleware())
 router.callback_query.middleware(GetClassMiddleware())
 
-extra_router = Router(name='extra_get_homework')
 
 @router.message(Command('get_homework'))
 async def get_homework_start(message: Message, state: FSMContext, class_: Class):

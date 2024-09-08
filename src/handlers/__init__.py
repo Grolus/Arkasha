@@ -1,29 +1,21 @@
 
 from . import (
-    start,
-    selfcall,
-    configure,
-    edit_configuration,
+    class_,
+    homework,
+
     debug,
-    setclass,
-    new_chat,
-    new_homework,
-    get_homework,
-    all_homework
+    selfcall,
+    start
 )
+
+__all__ = ('routers')
 
 routers = [
     debug.router,
-    start.router,
     selfcall.router,
-    new_homework.router,
-    configure.router,
-    edit_configuration.router,
-    new_chat.router,
-    setclass.router,
-    get_homework.router,
-    get_homework.extra_router,
-    all_homework.router,
+    start.router,
+
+    *class_.routers,
+    *homework.routers
 ]
 
-__all__ = ('routers')
