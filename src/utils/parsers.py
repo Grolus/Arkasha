@@ -19,10 +19,11 @@ def parse_one_subject(word: str, subjects: list[Subject], *, return_dist: bool=F
     min_dist = float('inf')
     min_dist_subject = None
     for sj in subjects:
-        dist = _dist_word_subject(word, sj.name)
-        if dist < min_dist:
-            min_dist = dist
-            min_dist_subject = sj
+        for sj_name_word in sj.name.split():
+            dist = _dist_word_subject(word, sj_name_word)
+            if dist < min_dist:
+                min_dist = dist
+                min_dist_subject = sj
     if return_dist:
         return min_dist_subject, min_dist
     return min_dist_subject
