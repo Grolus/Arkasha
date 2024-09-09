@@ -1,5 +1,5 @@
 
-from parsers import parse_subjects, _dist_word_subject
+from utils.parsers import parse_subjects, _dist_word_subject
 from entities.subject import DEFAULT_SUBJECTS, EmptySubject, Subject
 from pprint import pprint
 

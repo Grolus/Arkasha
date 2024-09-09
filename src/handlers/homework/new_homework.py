@@ -1,21 +1,17 @@
 
-from typing import Callable, Any
-import datetime
 
-from aiogram import Router, F, BaseMiddleware
-from aiogram.types import Message, TelegramObject, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from aiogram import Router, F
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import SendMessage
 
 from ..middlewares import GetClassMiddleware
-from exceptions import ValueNotFoundError
-from storage.tables import ChatTable, AdministratorTable, HomeworkTable
+from storage.tables import HomeworkTable
 from entities import Class, Subject, Homework
 from utils.states import HomeworkSettingState
-from utils import Weekday, allocate_values_to_nested_list, get_now_week
-from parsers import parse_subjects, parse_one_subject
-from utils.strings import slot_to_callback, slot_to_string, callback_to_slot
+from utils import Weekday, allocate_values_to_nested_list
+from utils.parsers import parse_subjects, parse_one_subject
+from utils.slot import slot_to_callback, slot_to_string, callback_to_slot
 
 
 # TODO inline kb include allk subjects (via pages)

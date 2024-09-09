@@ -8,8 +8,8 @@ from ..middlewares import GetClassMiddleware
 from entities import Class, Subject, Homework
 from utils import allocate_values_to_nested_list, Weekday, get_now_week
 from utils.states import GetHomeworkState
-from utils.strings import slot_to_callback, slot_to_string, callback_to_slot
-from parsers import parse_one_subject
+from utils.slot import slot_to_callback, slot_to_string, callback_to_slot
+from utils.parsers import parse_one_subject
 from exceptions import ValueNotFoundError
 
 
@@ -21,11 +21,11 @@ router.callback_query.middleware(GetClassMiddleware())
 
 
 @router.message(Command('get_homework'))
-async def get_homework_start(message: Message, state: FSMContext, class_: Class):
-    probably_subjects = list(class_.timetables[Weekday(message.date.weekday())])
+async def get_homework_start(message: Message, state: FSMContext, class_: Class, weekday: Weekday):
+    probably_subjects = class_.get_probably_subjects(weekday)
     await state.set_state(GetHomeworkState.choosing_subject)
     return await message.reply(
-        'Выберте предмет, по которому хотите получить дз, или напишите его название',
+        'Выберте предмет, по которому хотите получить дз, или <b>напишите</b> его название',
         reply_markup=InlineKeyboardMarkup(inline_keyboard=allocate_values_to_nested_list([
             InlineKeyboardButton(text=sj.name, callback_data=f'choosedsubjectgethw_{sj.encode()}') 
             for sj in probably_subjects

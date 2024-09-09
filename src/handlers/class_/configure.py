@@ -8,7 +8,7 @@ from filters import ChatTypeFilter
 from entities import Subject, TimetableBuilder
 from entities.subject import DEFAULT_SUBJECTS
 from storage.tables import AdministratorTable, ClassTable
-from parsers import parse_weekdays
+from utils.parsers import parse_weekdays
 from utils.states import ConfigureState
 from utils.keyboards import ConfigureInlineKeyboardMarkup as InlineMarkup
 from utils.strings import (format_answer_changed_subject_list, 

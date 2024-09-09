@@ -3,11 +3,10 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKe
 from aiogram.fsm.context import FSMContext
 
 from ..middlewares import GetClassMiddleware
-from parsers import is_subject_word
 from entities import Class, Homework, Subject
-from entities.homework import is_position_needed
+from utils.parsers import is_subject_word
 from utils import Weekday
-from utils.strings import slot_to_string, slot_to_callback, callback_to_slot
+from utils.slot import sort_slots, slot_to_string, slot_to_callback, callback_to_slot
 from utils.states import BtwNewHomeworkState
 
 router = Router(name='btw_new_homework')
@@ -28,8 +27,7 @@ def get_closest_slot(class_: Class, subject: Subject, now_weekday: Weekday):
     closest_slot = (closest_weekday, closest_pos, is_for_next_week)
     return closest_slot
 
-def sort_slots(slots: list[tuple[Weekday, int, bool]]):
-    slots.sort(key=lambda t: int(t[0])*10+t[1] + t[2]*100)
+
 # По биологии читать параграф 2, рис. 5, творческая работа
 
 def format_answer_got_homework(homework: Homework, posttext: str | None=None, slot_to_save: tuple | None=None) -> str:

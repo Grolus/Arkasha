@@ -156,3 +156,7 @@ class Class():
                 self._groups_dict[subject] = self.get_subject_groups(subject)
         return self._groups_dict
 
+    def get_probably_subjects(self, now_weekday: Weekday):
+        weekday = self.weekday_delta(now_weekday, 1)
+        return list(self.timetables[weekday])
+
