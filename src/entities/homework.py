@@ -4,6 +4,7 @@ import datetime
 from . import Subject, Class
 from utils import Weekday
 from storage.tables import HomeworkTable, LessonTable
+from utils.slot import slot_to_string
 
 
 def is_position_needed(class_: Class, subject: Subject, weekday: Weekday):
@@ -42,8 +43,10 @@ class Homework:
     def slot(self, now_week: int):
         return (self.weekday, self.position, self.week > now_week)
 
-    def __str__(self) -> str:
-        return f"Домашнее задание по {self.subject.name} на {self.weekday.accusative}, {self.position} урок:\n<b>{self.text}</b>"
+    def get_string(self, now_week: int) -> str:
+        return (f'Задание по предмету <b>{self.subject.name}</b>:\n'
+        f'<i>{self.text}</i>\n\n'
+        f'(на {slot_to_string(self.slot(now_week), case="accusative", title=False)})')
 
     def get_small_string(self) -> str:
         return f"{self.position}. <i>{self.subject}</i>: <b>{self.text}</b>"
@@ -71,6 +74,14 @@ class Homework:
         table_values = HomeworkTable.get_all_for_day(class_.connected_table_value, weekday, week)
         return [cls.from_table_value(v) for v in table_values]
     
+    @classmethod
+    def get_last_for_subject(cls, subject, class_):
+        table_value = HomeworkTable.get_last_for_subject(subject.name, class_.connected_table_value)
+        if table_value:
+            return cls.from_table_value(table_value)
+        else:
+            return None
+
     def change_slot(self, new_slot: tuple):
         self.weekday, self.position, is_for_next_week = new_slot
         self.week += is_for_next_week

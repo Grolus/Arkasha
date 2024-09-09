@@ -80,3 +80,30 @@ class HomeworkTable(BaseTable):
         )
         return [cls.from_selected_row(row) for row in result]
 
+    @classmethod
+    def get_last_for_subject(cls, subject_name, class_table):
+        from . import SubjectTable, LessonTable
+        result = DBConection().query(
+            f"""SELECT homework.text, lesson.weekday, homework.week, lesson.position, homework.year
+            FROM homework
+                JOIN lesson ON homework.lessonID=lesson.idLesson 
+            WHERE lesson.subjectID={SubjectTable(subject_name).id_} AND lesson.classID={class_table.id_}
+            ORDER BY homework.year DESC, homework.week DESC, 
+                    lesson.weekday DESC, lesson.position DESC
+            LIMIT 1"""
+        )
+        if result:
+            text, weekday, week, position, year = result[0]
+            homework = cls(
+                LessonTable(
+                    class_table,
+                    SubjectTable(subject_name),
+                    weekday,
+                    position
+                ),
+                text, week, year
+            )
+            loger.debug(f"Collected homework table: {homework}")
+            return homework
+        else: 
+            return None

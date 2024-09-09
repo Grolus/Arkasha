@@ -6,14 +6,12 @@ from aiogram.filters import Command
 
 from ..middlewares import GetClassMiddleware
 from entities import Class, Subject, Homework, PagedList
-from utils import allocate_values_to_nested_list, Weekday, get_now_week
+from utils import allocate_values_to_nested_list, Weekday
 from utils.states import GetHomeworkState
-from utils.slot import slot_to_callback, slot_to_string, callback_to_slot, sort_slots
-from utils.parsers import parse_one_subject
-from exceptions import ValueNotFoundError
+from utils.slot import slot_to_callback, slot_to_string, callback_to_slot
 
 
-# TODO inline kb include allk subjects (via pages)
+
 
 router = Router(name='get_homework')
 router.message.middleware(GetClassMiddleware())
@@ -80,7 +78,20 @@ async def choosed_subject_handler(callback: CallbackQuery, state: FSMContext, cl
     homeworks = Homework.get_awaible(subject, class_, weekday, week)
     if not homeworks:
         await state.clear()
-        return await callback.message.edit_text('не нашел')
+        last_saved = Homework.get_last_for_subject(subject, class_)
+        if last_saved:
+            await state.set_data({'last_saved_homework': last_saved})
+            return await callback.message.edit_text(
+                f'Актуального задания по предмету {subject.name} не сохранено. '
+                f'Показать последнее сохранённое? ({slot_to_string(last_saved.slot(week))})',
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text='Показать', callback_data='getlasthomework_1'),
+                    InlineKeyboardButton(text='Нет', callback_data='getlasthomework_0')
+                ]]))
+        else:
+            return await callback.message.edit_text(
+                f'Актуального задания по предмету {subject.name} не сохранено.'
+            )
     slot_to_homework = {hw.slot(week) : hw for hw in homeworks}
     slots = list(slot_to_homework.keys())
     await state.set_data({'slot_to_homework': slot_to_homework})
@@ -94,14 +105,18 @@ async def choosed_subject_handler(callback: CallbackQuery, state: FSMContext, cl
     )
     
 @router.callback_query(GetHomeworkState.choosing_slot, F.data.startswith('choosedslotgethw_'))
-async def send_homework_handler(callback: CallbackQuery, state: FSMContext, class_: Class):
+async def send_homework_handler(callback: CallbackQuery, state: FSMContext, week: int):
     slot = callback_to_slot(callback.data)
-    weekday, position, is_for_next_week = slot
     slot_to_homework = (await state.get_data())['slot_to_homework']
     choosed_homework = slot_to_homework[slot]
     await state.clear()
-    return await callback.message.edit_text(
-        f'Задание по предмету <b>{choosed_homework.subject.name}</b>:\n'
-        f'<i>{choosed_homework.text}</i>\n\n'
-        f'(на {slot_to_string(slot, case="accusative", title=False)})'
-    )
+    return await callback.message.edit_text(choosed_homework.get_string(week))
+
+@router.callback_query(F.data.startswith('getlasthomework'))
+async def get_last_homework(callback: CallbackQuery, state: FSMContext, week: int):
+    if callback.data.split('_')[1] == '0':
+        return await callback.message.delete()
+    last_saved_homework = (await state.get_data())['last_saved_homework']
+    await state.clear()
+    return await callback.message.edit_text('❗ <b>Старое</b> ❗\n' + last_saved_homework.get_string(week))
+
