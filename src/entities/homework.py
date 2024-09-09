@@ -70,3 +70,7 @@ class Homework:
     def get_all_homeworks_for_day(cls, class_: Class, weekday: Weekday, week: int):
         table_values = HomeworkTable.get_all_for_day(class_.connected_table_value, weekday, week)
         return [cls.from_table_value(v) for v in table_values]
+    
+    def change_slot(self, new_slot: tuple):
+        self.weekday, self.position, is_for_next_week = new_slot
+        self.week += is_for_next_week

@@ -38,7 +38,8 @@ class HomeworkSettingState(StatesGroup):
     choosing_weekday = State()
 
 class BtwNewHomeworkState(StatesGroup):
-    choosing_another_slot = State()
+    typed_homework = State()
+    choosing_slot = State()
 
 class GetHomeworkState(StatesGroup):
     choosing_subject = State()

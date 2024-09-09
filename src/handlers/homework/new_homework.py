@@ -8,7 +8,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.methods import SendMessage
 
-from .middlewares import GetClassMiddleware
+from ..middlewares import GetClassMiddleware
 from exceptions import ValueNotFoundError
 from storage.tables import ChatTable, AdministratorTable, HomeworkTable
 from entities import Class, Subject, Homework

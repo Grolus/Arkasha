@@ -1,4 +1,6 @@
 
+from typing import Literal
+
 from entities import Subject, EmptySubject
 from .weekday import Weekday
 
@@ -43,9 +45,14 @@ def format_answer_start_configure(existing_classes_amount: int):
     f'Хотите изменить {"их" if existing_classes_amount > 1 else "его"} или создать новый?') if existing_classes_amount else \
     f'У вас нет уже созданных классов. Хотите создать новый?'
 
-def slot_to_string(slot: tuple[Weekday, int, bool]):
+def slot_to_string(
+        slot: tuple[Weekday, int, bool], *, 
+        case: Literal['nominative', 'genetive', 'accusative', 'dativ', 'instrumental', 'prepositional']='nominative',
+        title: bool=True):
     weekday, position, is_for_next_week = slot
-    return weekday.name.title() + (" следующей недели" if is_for_next_week else "") + f", {position} урок"
+    weekday_word = getattr(weekday, case)
+    weekday_word = weekday_word.title() if title else weekday_word
+    return weekday_word + (" следующей недели" if is_for_next_week else "") + f", {position} урок"
 
 def slot_to_callback(slot: tuple[Weekday, int, bool], callback_prefix: str='choosedslot'):
     return f'{callback_prefix}_{int(slot[0])}_{slot[1]}_{int(slot[2])}'

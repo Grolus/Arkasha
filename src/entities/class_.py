@@ -105,10 +105,14 @@ class Class():
                 slots.append((wd, i+1, int(wd) <= int(now_weekday)))
         return slots
 
-    def weekday_delta(self, now_weekday: Weekday, delta: int):
-        now_weekday_index = self.weekdays.index(now_weekday)
-        result_weekday_index = (now_weekday_index + delta) % len(self.weekdays)
-        return self.weekdays[result_weekday_index]
+    def weekday_delta(self, now_weekday: Weekday, required_change: int):
+        now_weekday += required_change
+        if now_weekday in self.weekdays:
+            return now_weekday
+        mode = required_change // abs(required_change)
+        while now_weekday not in self.weekdays:
+            now_weekday += mode
+        return now_weekday
 
     @classmethod
     def from_table_value(cls, tableclass: ClassTable) -> Self:

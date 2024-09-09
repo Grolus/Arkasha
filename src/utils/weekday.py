@@ -79,6 +79,26 @@ class Weekday:
     def __eq__(self, other: Self | int) -> bool:
         return (isinstance(other, Weekday) and self.__number == other.__number) \
              or (isinstance(other, int) and self.__number == other)
+    def __lt__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.__number < other
+        else:
+            return self.__number < other.__number
+    def __le__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.__number <= other
+        else:
+            return self.__number <= other.__number
+    def __gt__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.__number > other
+        else:
+            return self.__number > other.__number
+    def __ge__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.__number >= other
+        else:
+            return self.__number >= other.__number
     def __int__(self):
         return self.__number
     def __hash__(self) -> int:

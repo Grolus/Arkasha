@@ -49,13 +49,13 @@ async def choosed_subject_handler(message_or_callback: Message | CallbackQuery, 
         message_or_callback.reply 
         if isinstance(message_or_callback, Message) 
         else message_or_callback.message.edit_text
-        )(
+    )(
             'Выберите день',
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text=slot_to_string(slot), callback_data=slot_to_callback(slot, 'choosedslotgethw'))]
                 for slot in awaible_slots
             ])
-        )
+    )
 
 @router.callback_query(GetHomeworkState.choosing_slot, F.data.startswith('choosedslotgethw_'))
 async def send_homework_handler(callback: CallbackQuery, state: FSMContext, class_: Class):
@@ -90,13 +90,13 @@ async def send_homework_handler(callback: CallbackQuery, state: FSMContext, clas
                 f'{weekday.accusative}{" следующей недели" if is_for_next_week else ""}. '
             )
 
-@extra_router.callback_query(F.data.startswith('extragethwchoosedhw_'))
-async def extra_homework_handler(callback: CallbackQuery, state: FSMContext):
-    hw_index = int(callback.data.split('_')[1])
-    homework = (await state.get_data())['recent_homeworks'][hw_index]
-    await state.clear()
-    text = str(homework)
-    print(text)
-    return await callback.message.edit_text(text)
+# @extra_router.callback_query(F.data.startswith('extragethwchoosedhw_'))
+# async def extra_homework_handler(callback: CallbackQuery, state: FSMContext):
+#     hw_index = int(callback.data.split('_')[1])
+#     homework = (await state.get_data())['recent_homeworks'][hw_index]
+#     await state.clear()
+#     text = str(homework)
+#     print(text)
+#     return await callback.message.edit_text(text)
 
 

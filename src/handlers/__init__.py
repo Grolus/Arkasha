@@ -1,5 +1,7 @@
 
 from . import (
+    middlewares,
+    
     class_,
     homework,
 
@@ -8,7 +10,8 @@ from . import (
     start
 )
 
-__all__ = ('routers')
+
+__all__ = ('routers', 'middlewares')
 
 routers = [
     debug.router,
