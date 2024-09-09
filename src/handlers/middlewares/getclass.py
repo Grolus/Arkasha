@@ -17,6 +17,7 @@ def get_class(chat_id, username) -> Class | list[Class] | None:
         if classes := AdministratorTable(username).get_classes():
             return [Class.from_table_value(i) for i in classes]
 
+CACHE = {}
 
 class GetClassMiddleware(BaseMiddleware):
     async def __call__(self, handler: Callable,
@@ -24,8 +25,10 @@ class GetClassMiddleware(BaseMiddleware):
         data: dict[str: Any]
     ):
         _message = message_or_callback if isinstance(message_or_callback, Message) else message_or_callback.message
-        got_class = get_class(_message.chat.id, message_or_callback.from_user.username)
+
+        got_class = CACHE.get(_message.chat.id) or get_class(_message.chat.id, message_or_callback.from_user.username)
         if isinstance(got_class, Class):
+            CACHE[_message.chat.id] = got_class
             data['class_'] = got_class
         elif isinstance(got_class, list):
             await data['state'].set_state(SetClassState.choosing_class)

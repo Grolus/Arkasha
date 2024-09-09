@@ -41,15 +41,21 @@ class HomeworkTable(BaseTable):
             )
 
     @classmethod
-    def get_recent_homeworks_for_subject(cls, subject_name, class_table):
+    def get_awaible_homeworks_for_subject(cls, subject_name: str, class_table: 'ClassTable', now_weekday: Weekday, now_week: int): # type: ignore
         from . import SubjectTable, LessonTable
+        now_weekday = int(now_weekday)
         result = DBConection().query(
-            f"""SELECT homework.text, lesson.weekday, homework.week, lesson.position, homework.year 
+            f"""SELECT homework.text, lesson.weekday, homework.week, lesson.position, homework.year
             FROM homework
                 JOIN lesson ON homework.lessonID=lesson.idLesson 
-            WHERE lesson.subjectID={SubjectTable(subject_name).id_} AND lesson.classID={class_table.id_} 
-            ORDER BY homework.year, homework.week, lesson.weekday, lesson.position
-            LIMIT 4""")
+            WHERE lesson.subjectID={SubjectTable(subject_name).id_} AND lesson.classID={class_table.id_}
+                AND (
+                    (homework.week={now_week} AND lesson.weekday >={now_weekday}) OR 
+                    (homework.week>{now_week})
+                )
+            ORDER BY homework.year DESC, homework.week DESC, 
+                    lesson.weekday DESC, lesson.position DESC
+        """)
         if result:
             table_homeworks = [cls(
                 LessonTable(

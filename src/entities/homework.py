@@ -49,8 +49,8 @@ class Homework:
         return f"{self.position}. <i>{self.subject}</i>: <b>{self.text}</b>"
 
     @classmethod
-    def get_recent(cls, subject: Subject, class_: Class):
-        table_values = HomeworkTable.get_recent_homeworks_for_subject(subject.name, class_.connected_table_value)
+    def get_awaible(cls, subject: Subject, class_: Class, now_weekday: Weekday, now_week: int):
+        table_values = HomeworkTable.get_awaible_homeworks_for_subject(subject.name, class_.connected_table_value, now_weekday, now_week)
         return [cls.from_table_value(v) for v in table_values]
 
     @classmethod

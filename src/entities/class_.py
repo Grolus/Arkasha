@@ -48,6 +48,9 @@ class Class():
             raise 
         return instance
 
+    def get_lessons_amount(self):
+        return len(self.timetables[self.weekdays[0]])
+
     def update_name(self, new_name: str):
         self.connected_table_value.values.classname = new_name
         self.name = new_name
@@ -159,4 +162,12 @@ class Class():
     def get_probably_subjects(self, now_weekday: Weekday):
         weekday = self.weekday_delta(now_weekday, 1)
         return list(self.timetables[weekday])
-
+    
+    def get_subject_list_for_paged_list(self, now_weekday: Weekday):
+        weekday_cursor = now_weekday
+        ordered_subject_list = []
+        while not ((weekday_cursor := self.weekday_delta(weekday_cursor, 1)) == now_weekday):
+            for subject in self.timetables[weekday_cursor]:
+                if subject not in ordered_subject_list:
+                    ordered_subject_list.append(subject)
+        return ordered_subject_list
