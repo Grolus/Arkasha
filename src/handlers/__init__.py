@@ -5,6 +5,7 @@ from . import (
     class_,
     homework,
 
+    cancel,
     debug,
     selfcall,
     start
@@ -14,6 +15,7 @@ from . import (
 __all__ = ('routers', 'middlewares')
 
 routers = [
+    cancel.router,
     debug.router,
     selfcall.router,
     start.router,
