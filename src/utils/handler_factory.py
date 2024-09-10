@@ -65,7 +65,8 @@ class ChangingSubjectListHandlerFactory:
             after_message_text: str | None=None,
             after_message_reply_markup: InlineKeyboardMarkup | None=None, 
             after_message_kwargs_getter: Callable[[CallbackQuery | Message | None], 
-                                                  dict] | None=None
+                                                  dict] | None=None,
+            after_message_by_state_data: bool=False
             ):
         """Handler generator for changing subject list.\n
             :param router: `Router` object to register handlers
@@ -122,7 +123,7 @@ class ChangingSubjectListHandlerFactory:
                     await state.set_state(next_state)
                     await callback.answer()
                     return await callback.message.edit_text(
-                        **get_kwargs(callback, subject_list_to_str(subjects, html_tags='b'))
+                        **get_kwargs(callback if not after_message_by_state_data else (await state.get_data()), subject_list_to_str(subjects, html_tags='b'))
                     )
 
         @router.message(changing_state, F.text)

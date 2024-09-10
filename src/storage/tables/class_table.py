@@ -98,7 +98,7 @@ class ClassTable(BaseTable):
     def get_subject_groups(self, table_subject: 'SubjectTable') -> int: # type: ignore
         from . import ClassSubjectTable
         result = db.query(
-            f"SELECT groups FROM {ClassSubjectTable._table_name} WHERE classID={self.id_} AND subjectID={table_subject.id_}"
+            f"SELECT `groups` FROM {ClassSubjectTable._table_name} WHERE classID={self.id_} AND subjectID={table_subject.id_}"
         )
         groups = result[0][0]
         return groups
@@ -147,5 +147,5 @@ class ClassTable(BaseTable):
         db.query(f"DELETE FROM {ClassAdministratorTable._table_name} WHERE classID={self.id_} AND administratorID={AdministratorTable(removed_admin_username).id_}")
 
     def set_subject_groups(self, table_subject, groups: int):
-        db.query(f"UPDATE classsubject SET groups={groups} WHERE classID={self.id_} AND subjectID={table_subject.id_}")
+        db.query(f"UPDATE classsubject SET `groups`={groups} WHERE classID={self.id_} AND subjectID={table_subject.id_}")
 

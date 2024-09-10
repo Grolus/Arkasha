@@ -119,7 +119,7 @@ async def choosed_value_to_edit_handler(callback: CallbackQuery, state: FSMConte
             await state.set_state(ConfigureState.edit_or_new_class_choosing)
             return await callback.message.edit_text(
                 format_answer_start_configure(len(classes)),
-                reply_markup=ConfigureInlineKeyboardMarkup.get_edit_or_new_cfg_choosing_markup(classes)
+                reply_markup=ConfigureInlineKeyboardMarkup.get_edit_or_new_cfg_choosing_markup(classes, 'editcfgbegin', 'newcfgbegin')
             )
 
 @router.message(EditConfigureState.setting_new_classname, F.text)
@@ -156,7 +156,8 @@ ChangingSubjectListHandlerFactory(
     EditConfigureState.choosing_value_to_edit,
     'subjects',
     'subject_groups',
-    after_message_kwargs_getter=_choosing_value_to_edit_kwargs
+    after_message_kwargs_getter=lambda state_data: _choosing_value_to_edit_kwargs(state_data[_StateData.class_]),
+    after_message_by_state_data=True
 )
 
 @router.callback_query(EditConfigureState.changing_admin_list, F.data.startswith('adminlistchange'))
