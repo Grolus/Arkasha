@@ -156,6 +156,7 @@ ChangingSubjectListHandlerFactory(
     EditConfigureState.choosing_value_to_edit,
     'subjects',
     'subject_groups',
+    lambda d: d[_StateData.class_].save_subject_list_changes(),
     after_message_kwargs_getter=lambda state_data: _choosing_value_to_edit_kwargs(state_data[_StateData.class_]),
     after_message_by_state_data=True
 )

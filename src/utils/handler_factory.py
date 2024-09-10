@@ -61,6 +61,7 @@ class ChangingSubjectListHandlerFactory:
             next_state: FSMContext, 
             subject_list_keyword: str,
             subject_groups_dict_keyword: str,
+            save_changes_command: Callable,
             *,
             after_message_text: str | None=None,
             after_message_reply_markup: InlineKeyboardMarkup | None=None, 
@@ -120,10 +121,12 @@ class ChangingSubjectListHandlerFactory:
                         reply_markup=InlineMarkup.get_all_subjects_markup(subjects, 'groupedsubject')
                     )
                 case 'finish':
+                    data = await state.get_data()
+                    save_changes_command((await state.get_data()))
                     await state.set_state(next_state)
                     await callback.answer()
                     return await callback.message.edit_text(
-                        **get_kwargs(callback if not after_message_by_state_data else (await state.get_data()), subject_list_to_str(subjects, html_tags='b'))
+                        **get_kwargs(callback if not after_message_by_state_data else (data), subject_list_to_str(subjects, html_tags='b'))
                     )
 
         @router.message(changing_state, F.text)

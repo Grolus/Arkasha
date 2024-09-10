@@ -119,6 +119,7 @@ ChangingSubjectListHandlerFactory(
     ConfigureState.waiting_for_day_length,
     _StateData.subjects,
     _StateData.subject_groups,
+    lambda x: None,
     after_message_text='Отлично, вот итоговый список предметов:\n\n{}' +
         '\n\nТеперь займемся расписанием. Чтобы начать, '
         'напишите количество уроков в вашем самом долгом дне (число уроков)'

@@ -150,6 +150,7 @@ class Class():
         return self.connected_table_value.get_subject_groups(SubjectTable(subject.name))
 
     def set_subject_groups(self, subject: Subject, groups: int):
+        self._groups_dict[subject] = groups
         self.connected_table_value.set_subject_groups(subject.connected_table_value, groups)
 
     def get_groups_dict(self):
@@ -171,3 +172,9 @@ class Class():
                 if subject not in ordered_subject_list:
                     ordered_subject_list.append(subject)
         return ordered_subject_list
+
+    def save_subject_list_changes(self):
+        self.connected_table_value.update_subjects(
+            [sj.name for sj in self.subjects], 
+            {sj.name: v for sj, v in self._groups_dict.items()}
+        )

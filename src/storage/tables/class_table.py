@@ -8,6 +8,20 @@ from logers import database as loger
 
 db = DBConection()
 
+def get_diff(old_list, new_list) -> tuple[list, list]:
+    old_list = old_list.copy()
+    new_list = new_list.copy()
+    new = []
+    deleted = []
+    for new_obj in new_list:
+        if new_obj not in old_list:
+            new.append(new_obj)
+    for old_obj in old_list:
+        if old_obj not in new_list:
+            deleted.append(old_obj)
+    return new, deleted
+
+
 class ClassTable(BaseTable):
     _table_name = 'class'
     unique_column_name = 'classname'
@@ -148,4 +162,32 @@ class ClassTable(BaseTable):
 
     def set_subject_groups(self, table_subject, groups: int):
         db.query(f"UPDATE classsubject SET `groups`={groups} WHERE classID={self.id_} AND subjectID={table_subject.id_}")
+
+    def update_subjects(self, new_all_subjects_names, groups_dict):
+        from . import ClassSubjectTable, SubjectTable
+        old_list = [sj.values.subjectname for sj in self.get_subjects()]
+        
+        new_list = new_all_subjects_names
+
+        to_add, to_delete = get_diff(old_list, new_list)
+        self.add_new_subjects(to_add, groups_dict)
+        self.delete_subjects(to_delete)
+        for sj in new_list:
+            self.set_subject_groups(SubjectTable(subjectname=sj), groups_dict.get(sj, 1))
+
+    def add_new_subjects(self, subjects_names: list[str], groups_dict):
+        from . import ClassSubjectTable, SubjectTable
+        ClassSubjectTable.insert_many([
+            ClassSubjectTable(
+                **self.as_kwargs(),
+                **SubjectTable(subjectname=name).as_kwargs(),
+                groups=groups_dict.get(name, 1)
+            )
+            for name in subjects_names
+        ])
+
+    def delete_subjects(self, subjects_names: list[str]):
+        from . import SubjectTable
+        subject_ids = [SubjectTable(subjectname=name).id_ for name in subjects_names]
+        db.query(f"DELETE FROM classsubject WHERE classID={self.id_} AND (" + " OR ".join([f'subjectID={id_}' for id_ in subject_ids]) + ")")
 
