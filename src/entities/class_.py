@@ -155,7 +155,7 @@ class Class():
     def get_groups_dict(self):
         if not self._groups_dict:
             self._groups_dict = {}
-            for subject in self.subject:
+            for subject in self.subjects:
                 self._groups_dict[subject] = self.get_subject_groups(subject)
         return self._groups_dict
 
