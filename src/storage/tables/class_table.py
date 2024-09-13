@@ -89,12 +89,13 @@ class ClassTable(BaseTable):
                             position=position,
                             groupnumber=i+1
                         ))
-                lesson_tables.append(LessonTable(
-                    **class_.as_kwargs(),
-                    subjectname=str(subject),
-                    weekday=int(weekday),
-                    position=position
-                ))
+                else:
+                    lesson_tables.append(LessonTable(
+                        **class_.as_kwargs(),
+                        subjectname=str(subject),
+                        weekday=int(weekday),
+                        position=position
+                    ))
         LessonTable.insert_many(lesson_tables)
         ClassAdministratorTable(
             **class_.as_kwargs()
