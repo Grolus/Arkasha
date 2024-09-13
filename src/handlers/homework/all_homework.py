@@ -13,6 +13,20 @@ router = Router(name='all_homework')
 router.message.middleware(GetClassMiddleware())
 router.callback_query.middleware(GetClassMiddleware())
 
+
+def homeworks_to_string(homeworks: list[Homework]):
+    final_string = ''
+    homeworks.sort(key=lambda x: x.position * 10 + x.group_number)
+    handled_positions = []
+    for hw in homeworks:
+        if hw.position in handled_positions:
+            final_string += f'    <b>{hw.subject}</b>: <i>{hw.text}</i>' + '\n'
+        else:
+            final_string += f'{hw.position}. <b>{hw.subject}</b>: <i>{hw.text}</i>' + '\n'
+            handled_positions.append(hw.position)
+    return final_string
+
+
 @router.message(Command('all_homework'))
 async def all_homwork_request_start(message: Message, state: FSMContext, class_: Class, weekday: Weekday):
     await state.set_state(GetAllHomeworkState.choosing_day)
@@ -29,17 +43,10 @@ async def send_homeworks_handler(callback: CallbackQuery, state: FSMContext, cla
     weekday_to_load = Weekday(int(callback.data.split('_')[1]))
     for_next_week = int(weekday) > int(weekday_to_load)
     homeworks = Homework.get_all_homeworks_for_day(class_, weekday, week + for_next_week)
-    
-    hw_dict = {(hw.subject, hw.position): hw for hw in homeworks}
-    awaible_subjects = list(class_.timetables[weekday])
-    strings = [
-        f"{i+1}. <s>{s.name}</s>" 
-        if hw_dict.get((s, i+1)) is None or hw_dict[(s, i+1)].position != i+1 else hw_dict[(s, i+1)].get_small_string() 
-        for i, s in enumerate(awaible_subjects)
-    ]
+    homeworks_string = homeworks_to_string(homeworks)
     await state.clear()
     return await callback.message.edit_text(
-        f'Задание на {weekday.accusative}{" следующей недели"}:\n\n' +
-        '\n'.join(strings)
+        f'Задания на {weekday.accusative}{" следующей недели"}:\n\n' +
+        homeworks_string
     )
 

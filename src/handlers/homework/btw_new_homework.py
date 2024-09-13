@@ -41,14 +41,55 @@ async def btw_new_homework_found(message: Message, state: FSMContext, class_: Cl
         hw_text = ' '.join(message.text.split()[2:])
         slot = get_closest_slot(class_, subject, weekday)
         hw_weekday, hw_pos, is_for_next_week = slot
-        collected_homework = Homework(subject, class_, hw_text, hw_weekday, week + is_for_next_week, hw_pos)
+        if (groups := class_.get_subject_groups(subject)) > 1:
+            await state.set_data({
+                'subject': subject,
+                'text': hw_text,
+                'slot': slot
+            })
+            await state.set_state(BtwNewHomeworkState.choosing_group)
+            return await message.reply( 
+                f'Выберите группу для предмета {subject.name}',
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text=str(i), callback_data=f'btwnewhwgroupchoosed_{i}')
+                    for i in range(1, groups+1)
+                ]])
+            )
+        collected_homework = Homework(subject, class_, hw_text, 1, hw_weekday, week + is_for_next_week, hw_pos)
         await state.set_data({'collected_homework': collected_homework})
         await state.set_state(BtwNewHomeworkState.typed_homework)
         return await message.reply(
             format_answer_got_homework(collected_homework, slot_to_save=slot),
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text='Сохранить', callback_data='btwnewhw_confirmed')],
-                [InlineKeyboardButton(text='Выбрать другой день ➡️', callback_data='btwnewhw_another')]
+                [InlineKeyboardButton(text='Выбрать другой день ➡️', callback_data='btwnewhw_another')],
+                [InlineKeyboardButton(text='Отменить', callback_data='btwnewhw_cancel')]
+            ])
+        )
+
+@router.callback_query(BtwNewHomeworkState.choosing_group, F.data.startswith('btwnewhwgroupchoosed_'))
+async def choosed_group(callback: CallbackQuery, state: FSMContext, class_: Class, week: int):
+    group_number = int(callback.data.split('_')[1])
+    state_data = await state.get_data()
+    slot = state_data['slot']
+    weekday, pos, is_for_next_week = slot
+    collected_homework = Homework(
+        state_data['subject'],
+        class_,
+        state_data['text'],
+        group_number,
+        weekday, 
+        week + is_for_next_week,
+        pos
+    )
+    await state.set_data({'collected_homework': collected_homework})
+    await state.set_state(BtwNewHomeworkState.typed_homework)
+    return await callback.message.edit_text(
+            format_answer_got_homework(collected_homework, slot_to_save=slot),
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text='Сохранить', callback_data='btwnewhw_confirmed')],
+                [InlineKeyboardButton(text='Выбрать другой день ➡️', callback_data='btwnewhw_another')],
+                [InlineKeyboardButton(text='Отменить', callback_data='btwnewhw_cancel')]
             ])
         )
 
@@ -74,6 +115,11 @@ async def choose_another_slot(callback: CallbackQuery, state: FSMContext, class_
             for slot in slots
         ])
     )
+
+@router.callback_query(BtwNewHomeworkState.typed_homework, F.data == 'btwnewhw_cancel')
+async def cancel_btw_hw(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.delete()
 
 @router.callback_query(BtwNewHomeworkState.choosing_slot, F.data.startswith('btwhwsetslotchoosed'))
 async def slot_choosed(callback: CallbackQuery, state: FSMContext, class_: Class):

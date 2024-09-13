@@ -80,6 +80,15 @@ class ClassTable(BaseTable):
         lesson_tables = []
         for weekday, timetable in timetables.items():
             for position, subject in enumerate(timetable):
+                if isinstance(subject, list):
+                    for i, sj in enumerate(subject):
+                        lesson_tables.append(LessonTable(
+                            **class_.as_kwargs(),
+                            subjectname=str(sj),
+                            weekday=int(weekday),
+                            position=position,
+                            groupnumber=i+1
+                        ))
                 lesson_tables.append(LessonTable(
                     **class_.as_kwargs(),
                     subjectname=str(subject),

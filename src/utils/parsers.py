@@ -14,7 +14,7 @@ def is_subject_word(word: str, subjects: list[Subject]):
     return None
 
 def parse_one_subject(word: str, subjects: list[Subject], *, return_dist: bool=False) -> Subject:
-    if EmptySubject() in subjects:
+    while EmptySubject() in subjects:
         subjects.remove(EmptySubject())
     min_dist = float('inf')
     min_dist_subject = None
@@ -73,7 +73,7 @@ def _dist_word_subject(word: str, subject_name: str):
     dist = lev.distance(word.lower(), subject_name.lower(), weights=(1, 1, len(word)))
     if len(subject_name) < 5 and dist > 1:
         return float('inf')
-    #print(f'{word} <> {subject_name} {dist}')
+    print(f'{word} <> {subject_name} {dist}')
     return dist
 
 def _word_to_weekday(word: str):

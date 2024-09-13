@@ -1,5 +1,5 @@
 from . import (
-    configure, edit_configuration, new_chat, setclass
+    configure, edit_configuration, new_chat, setclass, print_timetable
 )
 
 
@@ -9,5 +9,6 @@ routers = [
     configure.router,
     edit_configuration.router,
     new_chat.router,
-    setclass.router
+    setclass.router,
+    print_timetable.router
 ]

@@ -71,10 +71,9 @@ class Class():
         self.connected_table_value.add_subject(subject.name)
 
     def start_timetable_updating(self, weekday: Weekday):
-        self._tt_updating_builder = TimetableBuilder(
+        self._tt_updating_builder = TimetableBuilder.from_existing_timetable(
             pre_timetables=self.timetables, 
-            starting_weekday=weekday, 
-            build_only_starting_weekday=True
+            starting_weekday=weekday
         )
         self.__is_updating_timetable = True
 
@@ -178,3 +177,10 @@ class Class():
             [sj.name for sj in self.subjects], 
             {sj.name: v for sj, v in self._groups_dict.items()}
         )
+
+    def print_timetables(self):
+        final_string = f'Расписание {self.name}' + '\n\n'
+        for weekday, timetable in self.timetables.items():
+            final_string += weekday.name.capitalize() + ':\n' + str(timetable)
+            final_string += '\n\n'
+        return final_string

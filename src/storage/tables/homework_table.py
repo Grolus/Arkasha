@@ -17,7 +17,8 @@ class HomeworkTable(BaseTable):
                 homework.class_.connected_table_value,
                 SubjectTable(homework.subject.name),
                 int(homework.weekday),
-                homework.position
+                homework.position,
+                homework.group_number
             ),
             homework.text,
             homework.week,
@@ -25,13 +26,13 @@ class HomeworkTable(BaseTable):
         ).insert()
 
     @classmethod
-    def get_text_by_week_weekday(cls, subject_name, class_table, weekday: Weekday, week: int, position: int, year: int) -> str:
+    def get_text_by_week_weekday(cls, subject_name, class_table, group_number: int, weekday: Weekday, week: int, position: int, year: int) -> str:
         # subject, text, weekday, week, position, year
         from . import LessonTable, SubjectTable
         result = DBConection().query(
             f"SELECT hw.text FROM {cls._table_name} hw JOIN {LessonTable._table_name} l ON l.idLesson=hw.lessonID "
             f"WHERE l.subjectID={SubjectTable(subject_name).id_} AND l.position={position} AND hw.year={year} AND "
-            f"l.classID={class_table.id_} AND l.weekday={int(weekday)} AND hw.week={week}"
+            f"l.classID={class_table.id_} AND l.weekday={int(weekday)} AND l.groupnumber={group_number} AND hw.week={week}"
         )
         if result:
             return result[0][0]

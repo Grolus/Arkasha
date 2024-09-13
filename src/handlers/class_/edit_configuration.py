@@ -23,14 +23,27 @@ router.message.filter(ChatTypeFilter('private'))
 # TODO чтобы нельзя было удалить главного админа
 # TODO кнопка отмены при удалении админа
 
+class OneDayTimetaleBuilder():
+    def __init__(self, timetable: Timetable, weekday: Weekday):
+        self.timetable = timetable
+        self.weekday = weekday
+        self._lesson_cursor = 0
+    def get_current_lesson(self) -> Subject | list:
+        return self.timetable[self._lesson_cursor]
+    def up_subject(self):
+        self._lesson_cursor += 1
+        if self._lesson_cursor == len(self.timetable):
+            self._lesson_cursor -= 1
+            raise IndexError(f'{self!r} out of range')
+
 
 def IKM(x):
     return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=i[0], callback_data=i[1]) for i in x1] for x1 in x])
 
 def _choosing_value_to_edit_kwargs(class_: Class):
     kwargs = {
-    'text': class_.get_information_string(),
-    'reply_markup': EditConfigureInlineKeyboardMarkup.choose_value_to_edit
+        'text': class_.get_information_string(),
+        'reply_markup': EditConfigureInlineKeyboardMarkup.choose_value_to_edit
     }
     return kwargs
 
@@ -63,6 +76,7 @@ def timetable_changing_kwargs(weekday_to_change: Weekday, tt_to_change: Timetabl
 
 class _StateData(Enum):
     class_ = 'class'
+    timetble_builder = 'timetable_builder'
 
 
 @router.callback_query(ConfigureState.edit_or_new_class_choosing, F.data.startswith('editcfgbegin_'))
@@ -98,7 +112,7 @@ async def choosed_value_to_edit_handler(callback: CallbackQuery, state: FSMConte
                 f"Предметы <b>{class_.name}</b>:\n\n" +
                 subject_list_to_str(class_.subjects, html_tags='i', numbered=True),
                 reply_markup=ConfigureInlineKeyboardMarkup.subjects_list_changing
-                )
+            )
         case 'administrators':
             await state.set_state(EditConfigureState.changing_admin_list)
             return await callback.message.edit_text(
@@ -113,7 +127,7 @@ async def choosed_value_to_edit_handler(callback: CallbackQuery, state: FSMConte
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text=wd.accusative.title(), callback_data=f'ttchangingday_{int(wd)}') for wd in weekdays_for_row]
                     for weekdays_for_row in allocate_values_to_nested_list(class_.weekdays, 2)
-                ]))
+            ]))
         case 'cancel':
             classes = AdministratorTable(class_.creator).get_classes()
             await state.set_state(ConfigureState.edit_or_new_class_choosing)
@@ -227,8 +241,10 @@ async def timetable_changing(callback: CallbackQuery, state: FSMContext):
     weekday_to_change = Weekday(int(callback.data.split('_')[1]))
     class_ = (await state.get_data())[_StateData.class_]
     tt_to_change = class_.timetables[weekday_to_change]
-    class_.start_timetable_updating(weekday_to_change)
-    subject_cursor = class_._tt_updating_builder.subject_cursor
+    update_builder = OneDayTimetaleBuilder(tt_to_change, weekday_to_change)
+    await state.update_data({_StateData.timetble_builder: update_builder})
+
+    subject_cursor = update_builder.lesson_cursor
     kb = [
         [InlineKeyboardButton(
             text='Пропустить',
@@ -242,17 +258,17 @@ async def timetable_changing(callback: CallbackQuery, state: FSMContext):
     await state.set_state(EditConfigureState.choosing_subject_to_insert)
     return await callback.message.edit_text(
         format_answer_timtable_making(
-            weekday_to_change, list(tt_to_change), 
-            f'Выберите новый предмет под номером {subject_cursor+1} или пропустите его',
+            weekday_to_change, list(tt_to_change),
+            f'Выберите новый предмет для {subject_cursor+1} урока или пропустите его',
             cursor=subject_cursor
         ),
         reply_markup=InlineKeyboardMarkup(inline_keyboard=kb)
     )
 
 @router.callback_query(EditConfigureState.choosing_subject_to_insert, F.data.startswith('ttchangingsubject_'))
-async def subject_changed(callback: CallbackQuery, state: FSMContext):
+async def lesson_changed(callback: CallbackQuery, state: FSMContext):
     inserted_subject = Subject.decode(callback.data.split('_')[1])
-    class_ = (await state.get_data())[_StateData.class_]
+    class_: Class = (await state.get_data())[_StateData.class_]
     weekday_to_change = class_._tt_updating_builder.weekday_cursor
     timetable = class_.timetables[weekday_to_change]
     inserting_result = class_.update_timetable(inserted_subject) # 0 or 2 because we build only one day

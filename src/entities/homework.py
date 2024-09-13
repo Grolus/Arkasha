@@ -11,44 +11,63 @@ def is_position_needed(class_: Class, subject: Subject, weekday: Weekday):
     return list(class_.timetables[weekday]).count(subject) > 1
 
 class Homework:
-
+    __self_subject_grouped: bool=None
     def __init__(
-        self, subject: Subject, class_: Class, text: str, 
+        self, subject: Subject, class_: Class, text: str, group_number: int, 
         weekday: Weekday, week: int, position: int | None=None, year: int=datetime.date.today().year # it`s ugly, but it`s working 
     ):
         self.subject = subject
         self.class_ = class_
         self.text = text
+        self.group_number = group_number
         self.weekday = weekday
         self.week = week
         self.year = year
         if position is None:
-            if not is_position_needed(self.class_, self.subject, self.weekday):
-                self.position = self.class_.timetables[self.weekday].position(self.subject)
+            self.position = self.class_.timetables[self.weekday].position(self.subject)
         else:
             self.position = position
         
-
     def save(self):
         HomeworkTable.save_new_homework(self)
 
     @classmethod
-    def get(cls, class_: Class, subject: Subject, weekday: Weekday, week: int, position: int, year: int):
+    def get(cls, class_: Class, subject: Subject, group_number: int, weekday: Weekday, week: int, position: int, year: int):
         text = HomeworkTable.get_text_by_week_weekday(
             subject_name=subject.name, class_table=class_.connected_table_value, 
-            weekday=weekday, week=week, position=position, year=year
+            weekday=weekday, week=week, position=position, year=year,
+            group_number=group_number
         )
         return cls(subject, class_, text, weekday, week, position, year)
     
     def slot(self, now_week: int):
         return (self.weekday, self.position, self.week > now_week)
 
+    def _get_self_subject_groups(self):
+        subject_groups = self.class_.get_subject_groups(self.subject)
+        if self.__self_subject_grouped is None:
+            self.__self_subject_grouped = subject_groups > 1
+        return subject_groups
+    
+    def _is_self_subject_grooped(self):
+        if self.__self_subject_grouped is None:
+            self._get_self_subject_groups()
+        return self.__self_subject_grouped
+
+    def _group_string(self):
+        if self._is_self_subject_grooped() > 1:
+            return f' ({self.groupnumber}) '
+        return ''
+
     def get_string(self, now_week: int) -> str:
-        return (f'Задание по предмету <b>{self.subject.name}</b>:\n'
+        return (f'Задание по предмету <b>{self.subject.name}<i>{self._group_string()}</i></b>:\n'
         f'<i>{self.text}</i>\n\n'
         f'(на {slot_to_string(self.slot(now_week), case="accusative", title=False)})')
 
     def get_small_string(self) -> str:
+        if self._is_self_subject_grooped():
+            position_string = (str(self.position) + '. ') if self.group_number == 1 else '   '
+            return position_string + self._group_string() + ': ' + self.text
         return f"{self.position}. <i>{self.subject}</i>: <b>{self.text}</b>"
 
     @classmethod
@@ -63,6 +82,7 @@ class Homework:
             Subject(lesson_table.values.subjectID.values.subjectname),
             Class.from_table_value(lesson_table.values.classID),
             table_value.values.text,
+            lesson_table.values.groupnumber,
             Weekday(lesson_table.values.weekday),
             table_value.values.week,
             lesson_table.values.position,

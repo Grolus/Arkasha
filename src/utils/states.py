@@ -40,6 +40,7 @@ class HomeworkSettingState(StatesGroup):
 class BtwNewHomeworkState(StatesGroup):
     typed_homework = State()
     choosing_slot = State()
+    choosing_group = State()
 
 class GetHomeworkState(StatesGroup):
     choosing_subject = State()

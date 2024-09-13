@@ -6,11 +6,20 @@ from utils import Weekday
 from storage.tables import LessonTable, SubjectTable
 
 class Timetable:
-    def __init__(self, subjects: list[Subject | EmptySubject]):
+    def __init__(self, subjects: list[Subject | EmptySubject | list]):
         self.lessons = [s for s in subjects]
-        self.table_subjects = tuple(SubjectTable(sj.name) for sj in self.lessons)
     def __str__(self):
-        return '\n'.join([f'{i+1}. {subject.name}' for i, subject in enumerate(self.subject)])
+        result_string = ''
+        for i, lesson in enumerate(self.lessons):
+            if isinstance(lesson, Subject):
+                result_string += f'{i+1}. {lesson.name}'
+            elif isinstance(lesson, list):
+                result_string += f'{i+1}. '
+                result_string += '\n    '.join([f'{sj.name}' for sj in lesson])
+            result_string += '\n'
+        return result_string
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__!r} object {self.lessons=}"
     def __getitem__(self, index: int):
         return self.lessons[index]
     def __setitem__(self, index: int, new_value: Subject):
@@ -25,7 +34,11 @@ class Timetable:
         return sj in self.lessons
     
     def position(self, subject: Subject):
-        return self.lessons.index(subject) + 1
+        for i, lesson in enumerate(self.lessons):
+            if (isinstance(lesson, Subject) and lesson == subject) or (isinstance(lesson, list) and subject in lesson):
+                return i + 1
+        print(f'position for {subject=} not found in {self=}')
+        
 
     def update_lesson(self, class_: 'Class', new_subject: Subject): # type: ignore
         pos = class_._subject_cursor
@@ -74,7 +87,7 @@ class TimetableBuilder:
         self = cls.__new__(cls)
         self.lessons_amount = max(map(len, list(pre_timetables.values())))
         self.weekdays = list(pre_timetables.keys())
-        self.weekday_cursor = starting_weekday or self.weekdays[0]
+        self.__wd_cursor = self.weekdays.index(starting_weekday)
         self.subject_cursor = 0
         self.group_cursor = 0
         self.raw_timetables = pre_timetables

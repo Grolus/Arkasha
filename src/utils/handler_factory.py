@@ -30,8 +30,13 @@ def _subject_to_callback(subject: Subject, callback_data_prefix: str) -> str:
     "'{callback_data_prefix}_{subject.name}'"
     return f"{callback_data_prefix}_{subject.name}"
 
+def _format_subject_name(subject_name: str):
+    if subject_name.isupper():
+        return subject_name
+    return subject_name.capitalize()
+
 def _parse_new_subjects(text: str, existing_subjects: list[Subject]) -> tuple[list[Subject], list[Subject]]:
-    new_subjects_names = [i.capitalize() for i in map(str.strip, text.split(',')) if i] # not-empty-string words
+    new_subjects_names = [_format_subject_name(i) for i in map(str.strip, text.split(',')) if i] # not-empty-string words
     subjects_to_add, already_exists_subjects = _new_subjects_master(new_subjects_names, existing_subjects)
     return subjects_to_add, already_exists_subjects
 
