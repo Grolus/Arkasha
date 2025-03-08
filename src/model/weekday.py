@@ -1,0 +1,93 @@
+from pydantic import BaseModel, PositiveInt, Field
+from typing_extensions import Self
+
+WEEKDAY_TO_NAME_ENG = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
+WEEKDAY_TO_NAME_RU = ('понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресение')
+WEEKDAY_TO_NOMINATIVE = WEEKDAY_TO_NAME_RU
+WEEKDAY_TO_GENETIVE = ('понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресение')
+WEEKDAY_TO_ACCUSATIVE = WEEKDAY_TO_GENETIVE
+WEEKDAY_TO_DATIV = ('понедельнику', 'вторнику', 'среде', 'четвергу', 'пятнице', 'субботе', 'воскресению')
+WEEKDAY_TO_INSTRUMENTAL = ('понедельником', 'вторником', 'средой', 'четвергом', 'пятницей', 'субботой', 'воскресением')
+WEEKDAY_TO_PREPOSITIONAL = ('понедельнике', 'вторнике', 'среде', 'четверге', 'пятнице', 'субботе', 'воскресении')
+WEEKDAY_TO_SHORT = ('пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс')
+
+class Weekday(BaseModel):
+    weekday_number: PositiveInt = Field(..., ge=0, le=6)
+    
+    def _all_variants(self) -> list[str]:
+        return [
+            self.short,
+            self.genetive,
+            self.nominative,
+            self.accusative,
+            self.instrumental,
+            self.prepositional,
+            self.eng
+            ]
+
+    @property
+    def short(self):
+        return WEEKDAY_TO_SHORT[self.weekday_number]
+    @property
+    def eng(self):
+        return WEEKDAY_TO_NAME_ENG[self.weekday_number]
+    @property
+    def genetive(self):
+        return WEEKDAY_TO_GENETIVE[self.weekday_number]
+    @property
+    def nominative(self):
+        return WEEKDAY_TO_NOMINATIVE[self.weekday_number]
+    name = name_ru = nominative
+    @property
+    def accusative(self):
+        return WEEKDAY_TO_ACCUSATIVE[self.weekday_number]
+    @property
+    def instrumental(self):
+        return WEEKDAY_TO_INSTRUMENTAL[self.weekday_number]
+    @property
+    def dativ(self):
+        return WEEKDAY_TO_DATIV[self.weekday_number]
+    @property
+    def prepositional(self):
+        return WEEKDAY_TO_PREPOSITIONAL[self.weekday_number]
+    def __repr__(self):
+        return f'Weekday({WEEKDAY_TO_NAME_ENG[self.weekday_number]})'
+    def __str__(self): 
+        return WEEKDAY_TO_NAME_RU[self.weekday_number]
+    def __add__(self, integer: int) -> Self:
+        if not isinstance(integer, int):
+            raise ValueError(f"Cant add {type(integer).__name__!r} to a \'Weekday\' (only 'Weekday' + 'int' allowed)")
+        new_number = (self.weekday_number + integer) % 7
+        return Weekday(new_number)
+    def __sub__(self, integer: int) -> Self:
+        if not isinstance(integer, int):
+            raise ValueError(f"Cant subtract {type(integer).__name__!r} of a \'Weekday\' (only 'Weekday' - 'int' allowed)")
+        new_number = (self.weekday_number - integer) % 7
+        return Weekday(new_number)
+    def __eq__(self, other: Self | int) -> bool:
+        return (isinstance(other, Weekday) and self.weekday_number == other.weekday_number) \
+             or (isinstance(other, int) and self.weekday_number == other)
+    def __lt__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.weekday_number < other
+        else:
+            return self.weekday_number < other.weekday_number
+    def __le__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.weekday_number <= other
+        else:
+            return self.weekday_number <= other.weekday_number
+    def __gt__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.weekday_number > other
+        else:
+            return self.weekday_number > other.weekday_number
+    def __ge__(self, other: Self | int) -> bool:
+        if isinstance(other, int):
+            return self.weekday_number >= other
+        else:
+            return self.weekday_number >= other.weekday_number
+    def __int__(self):
+        return self.weekday_number
+    def __hash__(self) -> int:
+        return self.weekday_number
