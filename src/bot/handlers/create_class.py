@@ -10,6 +10,7 @@ from enum import Enum
 from ..filters import ChatTypeFilter
 from ..public import get_prompt_from_file
 
+from model import Timetable
 import service.class_service as service
 
 router = Router(name="create_class")
@@ -38,11 +39,15 @@ async def creating_subject_list(message: Message, state: FSMContext):
         text = get_prompt_from_file('create_class/create_timetable.txt')
         return await message.answer(text)
     else:
-        text = get_prompt_from_file('create_clss/error_class_exitst.txt')
+        text = get_prompt_from_file('create_class/error_class_exitst.txt')
         await state.clear()
         return await message.answer(text)
 
 @router.message(States.creating_timetable)
 async def typed_timetable(message: Message, state: FSMContext):
-    ...
-
+    await state.clear()
+    try:
+        timetable: Timetable = Timetable.parse(message.text)
+        return await message.answer(repr(timetable))
+    except:
+        return await message.answer('не удалось')

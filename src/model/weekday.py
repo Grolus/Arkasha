@@ -1,5 +1,6 @@
-from pydantic import BaseModel, PositiveInt, Field
+from pydantic import BaseModel, NonNegativeInt, Field
 from typing_extensions import Self
+from exceptions import ParsingError
 
 WEEKDAY_TO_NAME_ENG = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
 WEEKDAY_TO_NAME_RU = ('понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресение')
@@ -12,8 +13,21 @@ WEEKDAY_TO_PREPOSITIONAL = ('понедельнике', 'вторнике', 'с�
 WEEKDAY_TO_SHORT = ('пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс')
 
 class Weekday(BaseModel):
-    weekday_number: PositiveInt = Field(..., ge=0, le=6)
+    weekday_number: NonNegativeInt = Field(..., ge=0, le=6)
     
+    def __init__(self, weekday_number: int):
+        super().__init__(weekday_number=weekday_number)
+
+    @classmethod
+    def parse(cls, text: str) -> Self:
+        for wd_num in range(7):
+            wd = cls(wd_num)
+            for wd_string in wd._all_variants():
+                # print(f"comparing {text} with {wd_string}: {text.lower() == wd_string}")
+                if text.lower() == wd_string:
+                    return wd
+        raise ParsingError(text, cls)
+
     def _all_variants(self) -> list[str]:
         return [
             self.short,
