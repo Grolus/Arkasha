@@ -1,5 +1,6 @@
 
 from model import Weekday
+from bot.parsing.weekday import parse_weekday
 
 def test_parse_weekday():
     cases = [
@@ -12,4 +13,4 @@ def test_parse_weekday():
         ('Tuesday', Weekday(1))
     ]
     for string, wd in cases:
-        assert wd == Weekday.parse(string)
+        assert wd == parse_weekday(string)

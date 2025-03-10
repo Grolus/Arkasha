@@ -18,16 +18,6 @@ class Weekday(BaseModel):
     def __init__(self, weekday_number: int):
         super().__init__(weekday_number=weekday_number)
 
-    @classmethod
-    def parse(cls, text: str) -> Self:
-        for wd_num in range(7):
-            wd = cls(wd_num)
-            for wd_string in wd._all_variants():
-                # print(f"comparing {text} with {wd_string}: {text.lower() == wd_string}")
-                if text.lower() == wd_string:
-                    return wd
-        raise ParsingError(text, cls)
-
     def _all_variants(self) -> list[str]:
         return [
             self.short,

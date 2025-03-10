@@ -1,5 +1,6 @@
 
 from model import Lesson, Subject
+from bot.parsing.lesson import parse_lesson
 
 lessons = [
     Lesson(subjects=[Subject('русский язык')]),
@@ -14,5 +15,5 @@ def test_parse_lesson():
         ('(Английский язык, ИКТ)', lessons[2])
     ]
     for text, result in cases:
-        assert result == Lesson.parse(text)
+        assert result == parse_lesson(text)
 

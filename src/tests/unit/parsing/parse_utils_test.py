@@ -1,4 +1,5 @@
-from parse_utils import split_with_ignoring
+
+from bot.parsing._parsing_utils import split_with_ignoring
 
 def test_split_with_ignoring():
     cases = [

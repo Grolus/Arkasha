@@ -1,4 +1,5 @@
 from model import Lesson, Subject, Timetable, Weekday
+from bot.parsing.timetable import parse_timetable
 
 fake = Timetable(timetable_dict={
     Weekday(0): [
@@ -15,4 +16,4 @@ fake = Timetable(timetable_dict={
 
 def test_parse_timtable():
     text = "пОнедельник: Алгебра, (Английский язык, ИКТ), Физика\nср: Геометрия, ОКНО, Биология"
-    assert fake == Timetable.parse(text)
+    assert fake == parse_timetable(text)
