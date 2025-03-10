@@ -9,6 +9,8 @@ from enum import Enum
 
 from ..filters import ChatTypeFilter
 from ..public import get_prompt_from_file
+from ..parsing.timetable import parse_timetable
+from ..formating.timetable import format_timetable_full
 
 from model import Timetable
 import service.class_service as service
@@ -22,7 +24,7 @@ class States(StatesGroup):
     
 class DataPart(Enum):
     name: str = "name"
-    subjects: str = "subjects"
+    timetable: str = "timetable"
 
 @router.message(Command("create_class"), ChatTypeFilter('private')) # а если не private ?
 async def start_create_class(message: Message, state: FSMContext):
@@ -46,10 +48,24 @@ async def creating_subject_list(message: Message, state: FSMContext):
 
 @router.message(States.creating_timetable)
 async def typed_timetable(message: Message, state: FSMContext):
-    await state.clear()
     try:
-        timetable: Timetable = Timetable.parse(message.text)
-        
-        return await message.answer(repr(timetable))
+        # parsing
+        timetable: Timetable = parse_timetable(message.text)
+
+        # saving new data
+        await state.update_data({DataPart.timetable: timetable})
+
+        # данные для ответа
+        class_name = (await state.get_data())[DataPart.name]
+        timetable_string = format_timetable_full(timetable)
+
+        text = get_prompt_from_file(
+            'create_class/confirm_class_creation.txt'
+            ).format(
+                class_name=class_name, 
+                timetable_string=timetable_string
+            )
+
+        return await message.answer(text)
     except ParsingError:
         return await message.answer('не удалось')
