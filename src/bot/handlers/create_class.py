@@ -12,6 +12,7 @@ from ..public import get_prompt_from_file
 
 from model import Timetable
 import service.class_service as service
+from exceptions import ParsingError
 
 router = Router(name="create_class")
 
@@ -48,6 +49,7 @@ async def typed_timetable(message: Message, state: FSMContext):
     await state.clear()
     try:
         timetable: Timetable = Timetable.parse(message.text)
+        
         return await message.answer(repr(timetable))
-    except:
+    except ParsingError:
         return await message.answer('не удалось')
