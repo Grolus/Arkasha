@@ -35,5 +35,5 @@ class UpdateLogerMiddleware(BaseMiddleware):
         loger.info(f' [{event_type.upper()}] {user_string} {separator} {information}')
         result = await handler(event, data)
         if isinstance(result, Message):
-            loger.info(f'{user_string} <<< {result.text}' + (' <with keyboard>' if isinstance(result.reply_markup, InlineKeyboardMarkup) else ''))
+            loger.info(f'{user_string} <<< {result.text}' + ('\n<with keyboard>' if isinstance(result.reply_markup, InlineKeyboardMarkup) else ''))
         return result

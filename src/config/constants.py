@@ -11,8 +11,8 @@ MIN_SUBJECT_NAME_LENGTH = 2
 EMPTY_LESSON_INPUT = "ОКНО"
 """Слово, которым пользователь указывает на пустой урок"""
 
-EMPTY_LESSON_VIEW = "ОКНО"
+EMPTY_LESSON_VIEW = "ОКНО (нет урока)"
 """Как бот отображает пользователю пустой урок"""
 
-GROOPED_LESSONS_SEPARATOR = "/"
+GROOPED_LESSON_SUBJECTS_SEPARATOR = "/"
 """Разделитель предметов в описании уроков, разделённых на группы"""
