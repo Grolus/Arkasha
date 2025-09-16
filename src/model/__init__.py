@@ -2,14 +2,14 @@ from .class_ import Class
 from .timetable import Timetable
 from .subject import Subject
 from .lesson import Lesson
-from .user import User
-from .weekday import Weekday
+from .weekday import Weekday, WWDate, Slot
 
 __all__ = (
     'Class',
     'Subject',
     'Lesson',
     'Timetable',
-    'User',
-    'Weekday'
+    'Weekday',
+    'WWDate',
+    'Slot'
 )

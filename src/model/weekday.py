@@ -1,6 +1,7 @@
-from pydantic import BaseModel, NonNegativeInt, Field
+from pydantic import BaseModel, NonNegativeInt, Field, PositiveInt
 from typing_extensions import Self
 from exceptions import ParsingError
+import datetime
 
 WEEKDAY_TO_NAME_ENG = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
 WEEKDAY_TO_NAME_RU = ('понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресение')
@@ -95,3 +96,41 @@ class Weekday(BaseModel):
         return self.weekday_number
     def __hash__(self) -> int:
         return self.weekday_number
+
+class WWDate(BaseModel):
+    weekday: Weekday
+    week: PositiveInt
+    year: PositiveInt
+
+    @classmethod
+    def from_date(cls, date: datetime.date) -> Self:
+        week = (
+            datetime.datetime(date.year, 1, 1).weekday() + 
+            date.timetuple().tm_yday
+        ) // 7 - 1
+        if date.weekday() == 6:
+            week -= 1
+        weekday = date.weekday()
+        year = date.year
+        return WWDate(
+            weekday=Weekday(weekday_number=weekday),
+            week=week,
+            year=year
+        )
+        
+class Slot(BaseModel):
+    wwdate: WWDate
+    position: int
+
+    
+
+    @classmethod
+    def new(cls, year, week, weekday_number, position) -> Self:
+        return Slot(
+            wwdate=WWDate(
+                week=week,
+                year=year,
+                weekday=Weekday(weekday_number=weekday_number)
+            ),
+            position=position
+        )

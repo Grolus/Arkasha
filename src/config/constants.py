@@ -8,6 +8,12 @@ MAX_SUBJECT_NAME_LENGTH = 30
 MIN_SUBJECT_NAME_LENGTH = 2
 """Минимальная длина названия предмета"""
 
+MAX_HOMEWORK_LENGTH = 200
+"""Максимальное кол-во символов в домашней работе"""
+
+MAX_CLASS_NAME_LENGTH = 30
+"""Максимальное кол-во символов в названии класса"""
+
 EMPTY_LESSON_INPUT = "ОКНО"
 """Слово, которым пользователь указывает на пустой урок"""
 
@@ -16,3 +22,6 @@ EMPTY_LESSON_VIEW = "ОКНО (нет урока)"
 
 GROOPED_LESSON_SUBJECTS_SEPARATOR = "/"
 """Разделитель предметов в описании уроков, разделённых на группы"""
+
+DEFAULT_CALLBACK_DATA_SEPARATOR = '-'
+"""Разделитель в callback data"""

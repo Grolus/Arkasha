@@ -12,3 +12,6 @@ alembic>=1.13.1          # Управление миграциями БД
 # Для тестирования
 pytest>=8.2.0            # Тестирование
 pytest-asyncio>=0.23.6   # Поддержка async/await в pytest
+
+cryptography>=45.0.7
+Levenshtein>=0.26.0

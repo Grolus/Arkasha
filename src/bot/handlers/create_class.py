@@ -47,7 +47,7 @@ async def start_create_class(message: Message, state: FSMContext):
 async def creating_timetable(message: Message, state: FSMContext):
     
     class_name = message.text
-    if service.validate_class_name(class_name):
+    if await service.validate_class_name(class_name):
         await state.update_data({DataPart.name: class_name})
         await state.set_state(CreateClassStates.creating_timetable)
         text = get_prompt_from_file('create_class/create_timetable.txt')
@@ -127,9 +127,8 @@ async def confirm_class_creation(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     name = data[DataPart.name]
     creator_username = callback.from_user.username
-    creator_fullname = callback.from_user.full_name
     timetable = data[DataPart.timetable]
-    service.save_new_class(name, creator_username, creator_fullname, timetable)
+    await service.save_new_class(name, creator_username, timetable)
     
     text = get_prompt_from_file(
         "create_class/class_confirmed.txt"

@@ -10,7 +10,7 @@ import time
 from config.settings import settings
 from config.constants import DEBUG_TELEGRAM_CHAT_ID
 from bot.handlers import routers
-from bot.middlewares.update_loger import UpdateLogerMiddleware
+from bot.middlewares import UpdateLogerMiddleware, GetWeekAndWeekdayMiddleware
 
 
 async def main():
@@ -22,6 +22,7 @@ async def main():
 
     dp.include_routers(*routers)
     dp.update.outer_middleware(UpdateLogerMiddleware())
+    dp.update.outer_middleware(GetWeekAndWeekdayMiddleware())
     await bot.send_message(DEBUG_TELEGRAM_CHAT_ID, f'Я запустился ({time.ctime()})')
     await dp.start_polling(bot)
 
