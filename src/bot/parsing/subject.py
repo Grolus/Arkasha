@@ -4,7 +4,7 @@ import Levenshtein as lev
 
 def parse_subject(text: str) -> Subject:
     parse_loger.debug(f'Parsing Subject: {text}')
-    return Subject(name=text.strip())
+    return Subject(name=text.strip().capitalize() if len(text) > 4 else text.strip().upper())
 
 def parse_subjects_from_text(text: str, avaible_subjects: list[Subject], candidates_amount: int=3) -> list[Subject]:
     """Returns list of 3 subjects"""

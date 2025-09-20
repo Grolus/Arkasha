@@ -3,6 +3,8 @@ from .timetable import Timetable
 from .subject import Subject
 from .lesson import Lesson
 from .weekday import Weekday, WWDate, Slot
+from .paged_list import PagedList
+from .homework import Homework
 
 __all__ = (
     'Class',
@@ -11,5 +13,7 @@ __all__ = (
     'Timetable',
     'Weekday',
     'WWDate',
-    'Slot'
+    'Slot',
+    'PagedList',
+    'Homework'
 )

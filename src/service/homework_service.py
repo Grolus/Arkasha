@@ -1,6 +1,6 @@
 
-from model import Subject, Class, WWDate, Slot
-
+from model import Subject, Class, WWDate, Slot, Homework
+from data import homework_data as data
 
     
 def get_closest_slot(class_: Class, now_wwdate: WWDate, subject: Subject) -> Slot:
@@ -21,4 +21,8 @@ def get_subject_groups(class_: Class, subject: Subject) -> int:
         for lesson in lessons:
             if len(lesson.subjects) > 1 and subject in lesson.subjects:
                 return len(lesson.subjects)
+            
+            
+async def save_homework(homework: Homework) -> None:
+    data.save_homework(homework)
             

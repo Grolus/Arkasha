@@ -20,8 +20,8 @@ EMPTY_LESSON_INPUT = "ОКНО"
 EMPTY_LESSON_VIEW = "ОКНО (нет урока)"
 """Как бот отображает пользователю пустой урок"""
 
-GROOPED_LESSON_SUBJECTS_SEPARATOR = "/"
+GROOPED_LESSON_SUBJECTS_SEPARATOR = " / "
 """Разделитель предметов в описании уроков, разделённых на группы"""
 
-DEFAULT_CALLBACK_DATA_SEPARATOR = '-'
+DEFAULT_CALLBACK_DATA_SEPARATOR = '_'
 """Разделитель в callback data"""

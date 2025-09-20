@@ -1,0 +1,1 @@
+Сохранил задание по предмету <i>{subject_name}</i> на {slot_string}.\nСпасибо, {full_name}

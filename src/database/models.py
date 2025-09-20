@@ -1,6 +1,6 @@
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey, text
+from sqlalchemy import String, ForeignKey, text, BIGINT
 
 from config.constants import MAX_SUBJECT_NAME_LENGTH, MAX_HOMEWORK_LENGTH, MAX_CLASS_NAME_LENGTH
 from enums import GroupNumberEnum
@@ -37,7 +37,24 @@ class ClassBase(Base):
     )
     lessons: Mapped[list['LessonBase']] = relationship(
         'LessonBase', 
-        back_populates='class_', cascade='all, delete-orphan'
+        back_populates='class_', 
+        cascade='all, delete-orphan'
+    )
+    chats: Mapped[list['ClassChatBase']] = relationship(
+        'ClassChatBase',
+        back_populates='class_',
+        cascade='all, delete-orphan'
+    )
+    
+class ClassChatBase(Base):
+    __tablename__ = 'classchat'
+    
+    chat_id: Mapped[int] = mapped_column(BIGINT, unique=True)
+    class_id: Mapped[int] = mapped_column(ForeignKey('classtable.id'))
+    
+    class_: Mapped[ClassBase] = relationship(
+        'ClassBase',
+        back_populates='chats'
     )
     
     

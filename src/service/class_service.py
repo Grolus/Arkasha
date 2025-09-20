@@ -13,11 +13,11 @@ async def save_new_class(class_name: str, creator_username: str, timetable: Time
     await data.save_new_class(class_=class_)
     
 async def set_class_for_chat(class_: Class, chat_id: int) -> None:
-    return data.set_class_for_chat(class_, chat_id)
+    return await data.set_class_for_chat(class_, chat_id)
     
 async def get_class_for_chat_id(chat_id: int) -> Class | None:
-    return data.get_class_for_chat_id(chat_id)
+    return await data.get_class_for_chat_id(chat_id)
     
 async def get_user_classes(username: str) -> list[Class]:
-    return data.get_user_classes(username)
+    return await data.get_user_classes(username)
     

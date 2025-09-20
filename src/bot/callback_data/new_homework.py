@@ -1,5 +1,5 @@
 from aiogram.filters.callback_data import CallbackData
-from typing_extensions import Self
+from typing_extensions import Self, Literal
 from model import Subject, Slot, WWDate, Weekday
 
 from config.constants import DEFAULT_CALLBACK_DATA_SEPARATOR
@@ -19,6 +19,12 @@ class ChoosedSubjectCallback(CallbackData, prefix='subjectchoosedhwset', sep=DEF
     
     def get_subject(self) -> Subject:
         return self.__class__.__SUBJECTS.pop(self.subject_id)
+
+
+
+class PagingSubjectListCallback(CallbackData, prefix='subjectlistpage'):
+    direction: Literal['up', 'down']
+
 
 class CancelCallback(CallbackData, prefix='homeworksetcancel', sep=DEFAULT_CALLBACK_DATA_SEPARATOR):
     ...

@@ -14,6 +14,8 @@ from model import Class
 
 # service.get_class_for_chat_id: Callable[[int], Class]
 # service.get_user_classes: Callable[[User], list[Class]]
+CLASSES = {}
+
 
 class SetClassState(StatesGroup):
     choosing_class = State()
@@ -21,16 +23,14 @@ class SetClassState(StatesGroup):
 class ChoosedClassCallback(CallbackData, prefix="choosedclassforchat", sep=DEFAULT_CALLBACK_DATA_SEPARATOR):
     class_id: int
     
-    __CLASSES = {}
-
     @classmethod
     def from_class(cls, class_: Class) -> Self:
         class_id = hash(class_.name)
-        cls.__CLASSES[class_id] = class_
+        CLASSES[class_id] = class_
         return cls(class_id=class_id)
 
     def get_class(self) -> Class:
-        return self.__class__.__CLASSES.pop(self.class_id)    
+        return CLASSES.pop(self.class_id)    
 
 
 class GetClassMiddleware(BaseMiddleware):
@@ -49,10 +49,10 @@ class GetClassMiddleware(BaseMiddleware):
             await data['state'].set_state(SetClassState.choosing_class)
             return await message.answer('Сначала выберите класс', reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                 InlineKeyboardButton(
-                    text=class_.name, callback_data=ChoosedClassCallback.from_class(class_)
+                    text=class_.name, callback_data=ChoosedClassCallback.from_class(class_).pack()
                 )] for class_ in user_classes
             ]))
         else:
-            return await message.answer('Для данного чата не выбран класс.')
+            return await message.answer('Для данного чата не выбран класс')
             
 

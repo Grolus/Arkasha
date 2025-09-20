@@ -5,16 +5,14 @@ from ._parsing_utils import strip_of_brackets
 from model import Lesson
 from logers import parse_loger
 
-def parse_lesson(text: str) -> Lesson:
+def parse_lesson(text: str) -> list[Lesson]:
     parse_loger.debug(f'Parsing Lesson: {text}')
     if ',' not in text:
-        return Lesson(subjects=[
-            parse_subject(text)
-        ])
+        return [Lesson(subject=parse_subject(text))]
     else:
-        subjects = []
+        lessons = []
 
         for subject_string in strip_of_brackets(text).split(','):
             subject = parse_subject(subject_string)
-            subjects.append(subject)
-        return Lesson(subjects=subjects)
+            lessons.append(Lesson(subject=subject))
+        return lessons
