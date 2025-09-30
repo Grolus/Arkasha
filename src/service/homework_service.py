@@ -12,7 +12,7 @@ def get_closest_slot(class_: Class, now_wwdate: WWDate, subject: Subject, group:
             for pos, lesson in enumerate(lessons):
                 if (len(lesson) == 1 and subject == lesson[0].subject
                     or
-                    group != GroupNumberEnum.NOT_GROUPED and subject == lesson[group_index].subject
+                    len(lesson) == 2 and group != GroupNumberEnum.NOT_GROUPED and subject == lesson[group_index].subject
                     ):
                     return Slot(
                         wwdate=WWDate(

@@ -1,2 +1,2 @@
-Сохранил задание по предмету <i>{subject_name}</i> на {slot_string} с вложением.
+Сохранил задание по предмету <i>{subject_name}</i> на {slot_string} <b>с вложением</b>.
 Спасибо, {full_name}

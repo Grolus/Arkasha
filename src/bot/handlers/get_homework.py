@@ -227,7 +227,7 @@ async def send_homework_handler(callback: CallbackQuery, state: FSMContext, wwda
         )
         if not choosed_homework.attachment_url else
         get_text('homework_with_attachment').format(
-            subject_name=choosed_homework.subject_name, 
+            subject_name=choosed_homework.subject.name, 
             homework_text=choosed_homework.text,
             attachment_url=choosed_homework.attachment_url,
             slot_string=format_relative_slot_string(wwdate, choosed_homework.slot)
@@ -242,13 +242,13 @@ async def get_last_homework(callback: CallbackQuery, state: FSMContext, wwdate: 
     await state.clear()
     return await callback.message.edit_text(
         get_text('homework_legacy').format(
-            subject_name=last_saved_homework.subject_name, 
+            subject_name=last_saved_homework.subject.name, 
             homework_text=last_saved_homework.text,
             slot_string=format_relative_slot_string(wwdate, last_saved_homework.slot)
         )
         if not last_saved_homework.attachment_url else
         get_text('homework_legacy_with_attachment').format(
-            subject_name=last_saved_homework.subject_name, 
+            subject_name=last_saved_homework.subject.name, 
             homework_text=last_saved_homework.text,
             attachment_url=last_saved_homework.attachment_url,
             slot_string=format_relative_slot_string(wwdate, last_saved_homework.slot)
