@@ -28,7 +28,7 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(
-        level=logging.INFO, 
+        level=logging.DEBUG, 
         format="[%(levelname)s:%(name)s] %(asctime)s %(message)s", 
         datefmt="%y-%m-%d %H:%M:%S",
         stream=sys.stdout

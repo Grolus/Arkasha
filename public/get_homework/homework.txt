@@ -1,0 +1,3 @@
+Задание по предмету <i>{subject_name}</i>:
+{homework_text}
+(на {slot_string})

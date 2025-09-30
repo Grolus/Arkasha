@@ -1,0 +1,4 @@
+Задание по предмету <i>{subject_name}</i>:
+{homework_text}
+<a href="{attachment_url}"><b>Посмотреть вложение</b></a>
+(на {slot_string})

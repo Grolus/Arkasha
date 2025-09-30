@@ -1,7 +1,7 @@
 
-from model import Class, Lesson, Subject, Timetable, Weekday
+from model import Class, Lesson, Subject, Timetable, Weekday, Homework, Slot, WWDate
 
-from database.models import ClassBase, LessonBase
+from database.models import ClassBase, LessonBase, HomeworkBase
 from database.dao.dao import ClassDAO
 
 from enums import GroupNumberEnum
@@ -46,6 +46,24 @@ def lessons_to_timetable(table_lessons: list[LessonBase]) -> Timetable:
 
 def subject_to_model(table_subject: Subject):
     return Subject(name=table_subject.name)
+
+def homework_to_model(table_homework: HomeworkBase) -> Homework:
+    
+    return Homework(
+        subject=subject_to_model(table_homework.lesson.subject),
+        text=table_homework.text,
+        class_=class_to_model(table_homework.class_, table_homework.class_.lessons),
+        slot=Slot(
+            wwdate=WWDate(
+                weekday=Weekday(table_homework.lesson.weekday_number),
+                week=table_homework.week,
+                year=table_homework.year
+            ),
+            position=table_homework.lesson.position
+        ),
+        attachment_url=table_homework.attachment_url,
+        group=table_homework.lesson.group_number
+    )
 
 
 # def lesson_to_model(table_lesson: LessonBase) -> Lesson:

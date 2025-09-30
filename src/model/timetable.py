@@ -27,14 +27,20 @@ class Timetable(BaseModel):
         sorted_weekday_keys = sorted_weekday_keys[start_index:] + sorted_weekday_keys[:start_index]
         group_index = 0 if group == GroupNumberEnum.FIRST else 1 if group == GroupNumberEnum.SECOND else None
         for weekday in sorted_weekday_keys:
-            for lessons in self.timetable_dict[weekday]:
+            for position, lessons in enumerate(self.timetable_dict[weekday]):
                 if len(lessons) == 1:
                     if lessons[0].subject == subject:
-                        slots.append(Slot(WWDate(weekday=weekday, week=now_wwdate.week + weekday <= now_weekday, year=now_wwdate.year)))
+                        slots.append(Slot(
+                            wwdate=WWDate(weekday=weekday, week=now_wwdate.week + (weekday <= now_weekday), year=now_wwdate.year),
+                            position=position
+                        ))
                 elif not group == GroupNumberEnum.NOT_GROUPED:
                     if lessons[group_index].subject == subject:
-                        slots.append(Slot(WWDate(weekday=weekday, week=now_wwdate.week + weekday <= now_weekday, year=now_wwdate.year)))
-        
+                        slots.append(Slot(
+                            wwdate=WWDate(weekday=weekday, week=now_wwdate.week + (weekday <= now_weekday), year=now_wwdate.year),
+                            position=position
+                        ))
+        slots.sort(key=lambda s: s.wwdate.year * 365 + s.wwdate.week * 7 + int(s.wwdate.weekday))
         return slots
         
     def get_slots_for_subject(self, subject: Subject, group_number_to_find: int) -> list[(Weekday, int)]: 

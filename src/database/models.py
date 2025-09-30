@@ -2,7 +2,12 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, text, BIGINT
 
-from config.constants import MAX_SUBJECT_NAME_LENGTH, MAX_HOMEWORK_LENGTH, MAX_CLASS_NAME_LENGTH
+from config.constants import (
+    MAX_SUBJECT_NAME_LENGTH, 
+    MAX_HOMEWORK_LENGTH, 
+    MAX_CLASS_NAME_LENGTH,
+    MAX_ATTACHMENT_URL_LENGTH
+)
 from enums import GroupNumberEnum
 
 from .database import Base
@@ -38,6 +43,7 @@ class ClassBase(Base):
     lessons: Mapped[list['LessonBase']] = relationship(
         'LessonBase', 
         back_populates='class_', 
+        lazy='joined',
         cascade='all, delete-orphan'
     )
     chats: Mapped[list['ClassChatBase']] = relationship(
@@ -73,7 +79,7 @@ class LessonBase(Base):
     )
     subject: Mapped['SubjectBase'] = relationship(
         'SubjectBase',
-        lazy='joined'
+        lazy='immediate'
     )
 
 
@@ -88,13 +94,18 @@ class HomeworkBase(Base):
     text: Mapped[str] = mapped_column(String(MAX_HOMEWORK_LENGTH))
     class_id: Mapped[int] = mapped_column(ForeignKey('classtable.id', ondelete='cascade'))
     lesson_id: Mapped[int] = mapped_column(ForeignKey('lesson.id', ondelete='cascade'))
+    week: Mapped[int]
+    year: Mapped[int]
+    attachment_url: Mapped[str] = mapped_column(String(MAX_ATTACHMENT_URL_LENGTH), nullable=True)
     
     class_: Mapped['ClassBase'] = relationship(
-        'ClassBase'
+        'ClassBase',
+        lazy='immediate'
     )
     
     lesson: Mapped['LessonBase'] = relationship(
-        'LessonBase'
+        'LessonBase',
+        lazy='joined'
     )
     
     

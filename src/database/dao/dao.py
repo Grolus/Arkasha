@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 
 from .base import BaseDAO
 from ..models import ClassBase, SubjectBase, LessonBase, HomeworkBase, ClassChatBase, GroupNumberEnum
 
-from model import Timetable, Weekday, Lesson
+from model import Timetable, WWDate
 
 class ClassDAO(BaseDAO):
     model = ClassBase
@@ -23,6 +23,9 @@ class ClassDAO(BaseDAO):
         result = await session.execute(stmt)
         return result.scalar()
     
+    @classmethod 
+    async def get_id_by_name(cls, session: AsyncSession, class_name: str) -> int:
+        return (await cls.get_by_name(session, class_name)).id
     # @classmethod
     # async def get_lessons(cls, class_: ClassBase, session: AsyncSession) -> Timetable:
     #     stmt = select(cls.model).where()
@@ -56,7 +59,8 @@ class SubjectDAO(BaseDAO):
     
     @classmethod
     async def get_id_by_name(cls, session, subject_name: str) -> int:
-        subject = (await cls.get_by_fields(session, name=subject_name))[0]
+        print('find subject %s' % subject_name)
+        subject = (await cls.get_by_fields(session, (cls.model.name, subject_name))).one()
         return subject.id
     
 class LessonDAO(BaseDAO):
@@ -105,3 +109,44 @@ class LessonDAO(BaseDAO):
     
 class HomeworkDAO(BaseDAO):
     model = HomeworkBase
+    
+    @classmethod
+    async def get_awaible_homeworks(cls, session: AsyncSession, class_id: int, subject_id: int, group: GroupNumberEnum, now_wwdate: WWDate) -> list[HomeworkBase]:
+        query = select(cls.model).join(
+            LessonBase, 
+            cls.model.lesson_id == LessonBase.id
+        ).where(
+            cls.model.class_id == class_id,
+            LessonBase.subject_id == subject_id,
+            LessonBase.group_number == group,
+            cls.model.week >= now_wwdate.week,
+            or_(
+                LessonBase.weekday_number > int(now_wwdate.weekday),
+                cls.model.week > now_wwdate.week
+            )
+        )
+        print(f"dao.py:128 {query=!s}")
+        result = await session.execute(query)
+        homeworks = list(result.scalars())
+        return homeworks
+    
+    @classmethod
+    async def get_last_saved_homework(cls, session: AsyncSession, class_id: int, subject_id: int, group: GroupNumberEnum) -> HomeworkBase | None:
+        query = select(cls.model).join(
+            LessonBase,
+            cls.model.lesson_id == LessonBase.id
+        ).where(
+            cls.model.class_id == class_id,
+            LessonBase.subject_id == subject_id,
+            LessonBase.group_number == group
+        ).order_by(
+            cls.model.year,
+            cls.model.week,
+            LessonBase.weekday_number,
+            LessonBase.position
+        ).limit(1)
+        
+        result = await session.execute(query)
+        
+        homework = result.one_or_none()
+        return homework

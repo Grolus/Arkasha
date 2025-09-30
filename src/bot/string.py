@@ -1,9 +1,9 @@
-from model import WWDate, Slot
+from model import WWDate, Slot, Homework
 
 def format_relative_slot_string(now_wwdate: WWDate, slot: Slot) -> str:
     """Преобразует `slot` к строке вида `'Понедельник ... недели [назад], 1 урок'`"""
     weekday_word = slot.wwdate.weekday.name_ru
-    position_part = f"{slot.position} урок"
+    position_part = f"{slot.position + 1} урок"
 
     # если неделя не меняется и день впереди - строка недели пуста
     # если неделя не меняется и день этот или сзади - "этой недели"
@@ -33,6 +33,7 @@ def format_relative_slot_string(now_wwdate: WWDate, slot: Slot) -> str:
                 week_part = " прошлой недели"
             else:
                 week_part = f" {difference} {week_word} назад"
-        
-    result = f"{position_part}, {weekday_word}{week_part}"
+    
+    day_part = f"{weekday_word}{week_part}"
+    result = f"{day_part.capitalize()}, {position_part}"
     return result

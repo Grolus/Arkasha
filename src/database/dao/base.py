@@ -23,6 +23,8 @@ class BaseDAO:
     @classmethod
     async def get_by_fields(cls, session: AsyncSession, *values_tuples):
         query = select(cls.model).where(*[i == j for i, j in values_tuples])
+        # print(query)
         result = await session.execute(query)
+        #print(result.all())
         return result.scalars()
         

@@ -29,7 +29,7 @@ router = Router(name="new_homework")
 router.message.middleware(GetClassMiddleware())
 router.callback_query.middleware(GetClassMiddleware())
 
-class States(StatesGroup):
+class SetHomeworkState(StatesGroup):
     typing_homework = State()
     choosing_subject = State()
     choosing_slot = State()
@@ -45,7 +45,8 @@ class DataPart(str, Enum):
 
 def get_text(filename: str) -> str:
     """Returns text from `public/homework_set/{filename}.txt`"""
-    return get_prompt_from_file('new_homework/' + filename + '.txt')
+    result = get_prompt_from_file('new_homework/' + filename + '.txt')
+    return result
     
 def get_button_text(filename: str) -> str:
     """Returns text from `public/homework_set/button/{filename}.txt"""
@@ -85,22 +86,23 @@ async def cancel_hwset(callback: CallbackQuery, state: FSMContext):
 
 @router.message(Command("new_homework"), F.reply_to_message.is_(None))
 async def new_homework_setting(message: Message, state: FSMContext, class_: Class):
-    await state.set_state(States.typing_homework)
+    await state.set_state(SetHomeworkState.typing_homework)
     return await message.answer(get_text('start'))
 
 @router.message(
-    Command('new_homework'), 
-    F.reply_to_message.is_not(None).text.as_('homework_text'), 
+    Command('new_homework'),
+    F.reply_to_message,
+    F.reply_to_message.text.as_('homework_text') | F.reply_to_message.caption.as_('homework_text'), 
     F.reply_to_message.as_("message_with_homework")
 )
 @router.message(
-    States.typing_homework, 
-    F.text.as_('homework_text'), 
+    SetHomeworkState.typing_homework, 
+    F.text.as_('homework_text') | F.caption.as_('homework_text'), 
     F.as_('message_with_homework')
 )
 async def got_text(message: Message, state: FSMContext, class_: Class, homework_text: str, message_with_homework: Message):
     is_with_attachment = not not message_with_homework.photo
-
+    print(f'{is_with_attachment=}, {message_with_homework.get_url()}')
     # saving collected information
     await state.set_data({
         DataPart.text: homework_text,
@@ -109,8 +111,8 @@ async def got_text(message: Message, state: FSMContext, class_: Class, homework_
     })
 
     # answering
-    subject_condidates = parse_subjects_from_text(homework_text, class_.get_subjects_list, 3)
-    await state.set_state(States.choosing_subject)
+    subject_condidates = parse_subjects_from_text(homework_text, class_.get_subjects_list(), 3)
+    await state.set_state(SetHomeworkState.choosing_subject)
     return await message.reply(
         get_text('choose_subject').format(homework_text=homework_text, full_name=message.from_user.full_name),
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
@@ -119,29 +121,29 @@ async def got_text(message: Message, state: FSMContext, class_: Class, homework_
             [InlineKeyboardButton(text=get_button_text('cancel'), callback_data=CancelCallback().pack())]
         ]))
 
-@router.callback_query(States.choosing_subject, CheckOtherSubjectsCallback.filter())
-async def choose_another_subject(callback: CallbackQuery, state: FSMContext, class_: Class, weekday: Weekday):
-    paged_list = PagedSubjectList(class_.get_subject_list_for_paged_list(weekday), 9)
+@router.callback_query(SetHomeworkState.choosing_subject, CheckOtherSubjectsCallback.filter())
+async def choose_another_subject(callback: CallbackQuery, state: FSMContext, class_: Class):
+    paged_list = PagedSubjectList(class_.get_subjects_list(), 9)
     text = (await state.get_data())[DataPart.text]
     await state.update_data({DataPart.paged_subject_list: paged_list})
     return await callback.message.edit_text(
-        f'Получено задание:\n<i>{text}</i>\n\n<b>{callback.from_user.full_name}</b>, выберите предмет для сохранения задания:',
+        get_text('choose_subject').format(homework_text=text, full_name=callback.from_user.full_name),
         reply_markup=paged_list.get_current_page_as_keyboard()
     )
 
-@router.callback_query(States.choosing_subject, PagingSubjectListCallback.filter())
+@router.callback_query(SetHomeworkState.choosing_subject, PagingSubjectListCallback.filter())
 async def subject_list_rolling(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    paged_list = data[DataPart.paged_subject_list]
-    action = callback.data.split('_')[1]
-    match action:
-        case 'pageup':
+    paged_list: PagedSubjectList = data[DataPart.paged_subject_list]
+    direction = PagingSubjectListCallback.unpack(callback.data).direction
+    match direction:
+        case 'up':
             paged_list.page_up()
-        case 'pagedown':
+        case 'down':
             paged_list.page_down()
     return await callback.message.edit_reply_markup(reply_markup=paged_list.get_current_page_as_keyboard())
 
-@router.callback_query(States.choosing_subject, ChoosedSubjectCallback.filter())
+@router.callback_query(SetHomeworkState.choosing_subject, ChoosedSubjectCallback.filter())
 async def subject_choosed(callback: CallbackQuery, state: FSMContext, class_: Class, wwdate: WWDate):
     
     # saving subject
@@ -151,15 +153,14 @@ async def subject_choosed(callback: CallbackQuery, state: FSMContext, class_: Cl
     })
     
     # группа?
-    groups = service.get_subject_groups(class_, choosed_subject)
-    if groups == 1:
+    if not class_.get_if_subject_grouped(choosed_subject):
         await state.update_data({
-            DataPart.group: 1 
+            DataPart.group: GroupNumberEnum.NOT_GROUPED
         })
         # сохранить на ближайший слот?
-        closest_slot: Slot = service.get_closest_slot(class_, wwdate, choosed_subject)
+        closest_slot: Slot = service.get_closest_slot(class_, wwdate, choosed_subject, GroupNumberEnum.NOT_GROUPED)
         homework_text = (await state.get_data())[DataPart.text]
-        await state.set_state(States.choosing_slot)
+        await state.set_state(SetHomeworkState.choosing_slot)
         return await callback.message.edit_text(
             get_text('choose_slot').format(subject_name=choosed_subject.name, homework_text=homework_text),
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
@@ -172,18 +173,18 @@ async def subject_choosed(callback: CallbackQuery, state: FSMContext, class_: Cl
         )
     else:
         # какая группа нужна?
-        await state.set_state(States.choosing_group)
+        await state.set_state(SetHomeworkState.choosing_group)
         return await callback.message.edit_text(
             get_text('choose_group').format(subject_name=choosed_subject.name),
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                InlineKeyboardButton(text=get_button_text('group').format(number=i), callback_data=ChoosedGroupCallback(i+1).pack())
-                for i in range(groups)
+                InlineKeyboardButton(text=get_button_text('group').format(number=i+1), callback_data=ChoosedGroupCallback(group=i+1).pack())
+                for i in range(2)
             ],
             [InlineKeyboardButton(text=get_button_text('cancel'), callback_data=CancelCallback().pack())]])
         )
 
 
-@router.callback_query(States.choosing_group, ChoosedGroupCallback.filter())
+@router.callback_query(SetHomeworkState.choosing_group, ChoosedGroupCallback.filter())
 async def choose_group(callback: CallbackQuery, state: FSMContext, class_: Class, wwdate: WWDate):
 
     # get group
@@ -198,8 +199,8 @@ async def choose_group(callback: CallbackQuery, state: FSMContext, class_: Class
     # answer
     data = await state.get_data()
     subject, text = data[DataPart.subject], data[DataPart.text]
-    closest_slot: Slot = service.get_closest_slot(class_, wwdate, subject)
-    await state.set_state(States.choosing_slot)
+    closest_slot: Slot = service.get_closest_slot(class_, wwdate, subject, group)
+    await state.set_state(SetHomeworkState.choosing_slot)
     return await callback.message.edit_text(
         get_text('choose_slot').format(subject_name=subject.name, homework_text=text),
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
@@ -211,17 +212,17 @@ async def choose_group(callback: CallbackQuery, state: FSMContext, class_: Class
             ])
     )
 
-@router.callback_query(States.choosing_slot, F.data == 'chooseanotherslothwset')
+@router.callback_query(SetHomeworkState.choosing_slot, ShowOtherSlotCallback.filter())
 async def choose_slot_to_save(callback: CallbackQuery, state: FSMContext, class_: Class, wwdate: WWDate):
     data = await state.get_data()
     subject = data[DataPart.subject]
     homework_text = data[DataPart.text]
-    group_number = data[DataPart.group]
-    awaible_slots = class_.timetable.get_relative_slots_for_subject(subject, group_number, wwdate)
-    await state.set_state(States.choosing_slot)
+    group = data[DataPart.group]
+    awaible_slots = class_.timetable.get_relative_slots_for_subject(subject, group, wwdate)
+    await state.set_state(SetHomeworkState.choosing_slot)
     
     return await callback.message.edit_text(
-        f'Получено задание по предмету <i>{subject.name}</i>:\n{homework_text}\n\nВыберите урок для сохранения...',
+        get_text('choose_another_slot').format(subject_name=subject.name, homework_text=homework_text),
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(
                 text=format_relative_slot_string(wwdate, slot), 
@@ -230,26 +231,25 @@ async def choose_slot_to_save(callback: CallbackQuery, state: FSMContext, class_
                     week=slot.wwdate.week, 
                     year=slot.wwdate.year, 
                     position=slot.position
-                )
+                ).pack()
             )]
             for slot in awaible_slots
             
-        ] + [[InlineKeyboardButton(text='Отменить', callback_data='cancel_hwset')]])
+        ] + [[InlineKeyboardButton(text=get_button_text('cancel'), callback_data=CancelCallback().pack())]])
     )
 
 
-@router.callback_query(States.choosing_slot, ChoosedSlotCallback.filter())
-async def complete_homework(callback: CallbackQuery, state: FSMContext, class_: Class, week: int):
+@router.callback_query(SetHomeworkState.choosing_slot, ChoosedSlotCallback.filter())
+async def complete_homework(callback: CallbackQuery, state: FSMContext, class_: Class, wwdate: WWDate):
     slot = ChoosedSlotCallback.unpack(callback.data).get_slot()
-    weekday, position, is_for_next_week = slot.to_tuple()
+    # weekday, position, is_for_next_week = slot.weekday, slot.position, slot.week > wwdate.week
     data = await state.get_data()
     subject = data[DataPart.subject]
     text = data[DataPart.text]
     group = data[DataPart.group]
     message_url = data[DataPart.message_url]
-    print(f'{message_url=}')
     collected_homework = Homework(
-        subject=subject, text=text, class_=class_, slot=slot, group=group
+        subject=subject, text=text, class_=class_, slot=slot, group=group, attachment_url=message_url
     )
     await service.save_homework(collected_homework)
 
@@ -261,7 +261,7 @@ async def complete_homework(callback: CallbackQuery, state: FSMContext, class_: 
             'complete_with_attachment'
         ).format(
             subject_name=subject.name, 
-            slot_string=format_relative_slot_string(slot), 
+            slot_string=format_relative_slot_string(wwdate, slot), 
             homework_text=text, 
             full_name=callback.from_user.full_name
         )

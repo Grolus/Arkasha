@@ -13,7 +13,7 @@ class Subject(BaseModel):
         super().__init__(name=name)
         ALL_SUBJECT_DICT[name] = self
     def __eq__(self, other: Self) -> bool:
-        if not isinstance(other, Self):
+        if not isinstance(other, self.__class__):
             raise TypeError('Can compare only Subject and Subject')
         return self.name == other.name
     def __hash__(self):

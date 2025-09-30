@@ -117,12 +117,13 @@ class WWDate(BaseModel):
             week=week,
             year=year
         )
+    
+    def __hash__(self) -> int:
+        return self.year * 365 + self.week * 7 + int(self.weekday)
         
 class Slot(BaseModel):
     wwdate: WWDate
     position: int
-
-    
 
     @classmethod
     def new(cls, year, week, weekday_number, position) -> Self:
@@ -134,3 +135,6 @@ class Slot(BaseModel):
             ),
             position=position
         )
+        
+    def __hash__(self) -> int:
+        return hash(self.wwdate) * self.position

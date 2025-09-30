@@ -4,21 +4,21 @@ from model import Subject, Slot, WWDate, Weekday
 
 from config.constants import DEFAULT_CALLBACK_DATA_SEPARATOR
 
-
+SUBJECTS = {}
 
 class ChoosedSubjectCallback(CallbackData, prefix='subjectchoosedhwset', sep=DEFAULT_CALLBACK_DATA_SEPARATOR):
     subject_id: int
     
-    __SUBJECTS = {}
+    
 
     @classmethod
     def from_subject(cls, subject: Subject) -> Self:
         subject_id = hash(subject.name)
-        cls.__SUBJECTS[subject_id] = subject
+        SUBJECTS[subject_id] = subject
         return cls(subject_id=subject_id)
     
     def get_subject(self) -> Subject:
-        return self.__class__.__SUBJECTS.pop(self.subject_id)
+        return SUBJECTS.pop(self.subject_id)
 
 
 

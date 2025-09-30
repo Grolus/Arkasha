@@ -7,4 +7,5 @@ class Homework(BaseModel):
     text: str
     class_: Class
     slot: Slot
+    attachment_url: str | None
     group: GroupNumberEnum
