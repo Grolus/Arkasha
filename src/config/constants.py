@@ -28,3 +28,9 @@ GROOPED_LESSON_SUBJECTS_SEPARATOR = " / "
 
 DEFAULT_CALLBACK_DATA_SEPARATOR = '_'
 """Разделитель в callback data"""
+
+MAX_SUBJECT_DISTANCE_IN_INSTANT_HOMEWORK_GETTING = 5
+"""Максимальная дистанция (по расстоянию левенштейна) до названия предмета при автосрабатывании команды получения задания"""
+
+SUBJECTS_CONDIDATES_IN_HOMEWORK_SETTING = 3
+"""Количество предложенных предметов при сохранении нового задания (тех, что нашлись в самом тексте задания)"""

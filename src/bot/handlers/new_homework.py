@@ -20,6 +20,7 @@ from ..string import format_relative_slot_string
 from ..parsing.subject import parse_subjects_from_text
 from ..public import get_prompt_from_file
 
+from config.constants import SUBJECTS_CONDIDATES_IN_HOMEWORK_SETTING
 from model import Class, WWDate, Slot, Subject, Weekday, Homework
 from model.paged_list import PagedList, allocate_values_to_nested_list
 from service import homework_service as service
@@ -111,7 +112,7 @@ async def got_text(message: Message, state: FSMContext, class_: Class, homework_
     })
 
     # answering
-    subject_condidates = parse_subjects_from_text(homework_text, class_.get_subjects_list(), 3)
+    subject_condidates = parse_subjects_from_text(homework_text, class_.get_subjects_list(), SUBJECTS_CONDIDATES_IN_HOMEWORK_SETTING)
     await state.set_state(SetHomeworkState.choosing_subject)
     return await message.reply(
         get_text('choose_subject').format(homework_text=homework_text, full_name=message.from_user.full_name),

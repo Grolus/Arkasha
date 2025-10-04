@@ -31,6 +31,7 @@ class GetHomeworkState(StatesGroup):
     choosing_subject = State()
     choosing_group = State()
     choosing_slot = State()
+    instant_triggered = State()
 
 router = Router(name='get_homework')
 router.message.middleware(GetClassMiddleware())
@@ -100,11 +101,14 @@ async def page_changing(callback: CallbackQuery, state: FSMContext):
         reply_markup=current_page_kb
     )
 
-
 @router.callback_query(
-        GetHomeworkState.choosing_subject, 
-        ChoosedSubjectCallback.filter()
+    GetHomeworkState.choosing_subject,
+    ChoosedSubjectCallback.filter(),
     )
+@router.callback_query(
+    GetHomeworkState.instant_triggered,
+    ChoosedSubjectCallback.filter(),
+)
 async def choosed_subject_with_group_handler(callback: CallbackQuery, state: FSMContext, class_: Class, wwdate: WWDate):
     subject = ChoosedSubjectCallback.unpack(callback.data).get_subject()
     await state.update_data({DataPart.subject: subject})
@@ -127,18 +131,19 @@ async def choosed_subject_with_group_handler(callback: CallbackQuery, state: FSM
         homeworks = await service.get_awaible_homeworks(class_, subject, group, wwdate)
         if not homeworks:
             await state.clear()
-            last_saved = await service.get_last_saved_homework(subject, group, class_)
+            last_saved = await service.get_last_saved_homework(class_, subject, group)
             if last_saved:
+                print(f'handlers/get_homework.py:136 last saved homework type: {type(last_saved)}')
                 await state.update_data({DataPart.last_saved_homework: last_saved})
                 return await callback.message.edit_text(
-                    get_text('no_homework_shot_last').format(
+                    get_text('no_homework_show_last').format(
                         subject_name=subject.name,
                         slot_string=format_relative_slot_string(wwdate, last_saved.slot)
                     ),
                     reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                         InlineKeyboardButton(
                             text=get_button_text('show_last_yes'), 
-                            callback_data=ShowLastHomeworkCallback(show=True).pack
+                            callback_data=ShowLastHomeworkCallback(show=True).pack()
                         ),
                         InlineKeyboardButton(
                             text=get_button_text('show_last_no'), 
@@ -177,7 +182,7 @@ async def group_choosed(callback: CallbackQuery, state: FSMContext, class_: Clas
     homeworks = await service.get_awaible_homeworks(class_, subject, group, wwdate)
     if not homeworks:
         await state.clear()
-        last_saved = await service.get_last_saved_homework(subject, group, class_)
+        last_saved = await service.get_last_saved_homework(class_, subject, group)
         if last_saved:
             await state.update_data({DataPart.last_saved_homework: last_saved})
             return await callback.message.edit_text(
@@ -188,7 +193,7 @@ async def group_choosed(callback: CallbackQuery, state: FSMContext, class_: Clas
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                     InlineKeyboardButton(
                         text=get_button_text('show_last_yes'), 
-                        callback_data=ShowLastHomeworkCallback(show=True).pack
+                        callback_data=ShowLastHomeworkCallback(show=True).pack()
                     ),
                     InlineKeyboardButton(
                         text=get_button_text('show_last_no'), 
@@ -197,7 +202,7 @@ async def group_choosed(callback: CallbackQuery, state: FSMContext, class_: Clas
                 ]]))
         else:
             return await callback.message.edit_text(
-                get_text('no_homework').format(subject.name)
+                get_text('no_homework').format(subject_name=subject.name)
             )
     slot_to_homework = {hw.slot : hw for hw in homeworks}
     slots = list(slot_to_homework.keys())

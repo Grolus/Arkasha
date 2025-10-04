@@ -45,5 +45,7 @@ async def get_last_saved_homework(class_: Class, subject: Subject, group: GroupN
     class_id = await ClassDAO.get_id_by_name(session, class_.name)
     subject_id = await SubjectDAO.get_id_by_name(session, subject.name)
     homework = await HomeworkDAO.get_last_saved_homework(session, class_id, subject_id, group)
-    return homework
+    if not homework:
+        return None
+    return homework_to_model(homework)
     

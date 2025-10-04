@@ -25,6 +25,7 @@ class ClassDAO(BaseDAO):
     
     @classmethod 
     async def get_id_by_name(cls, session: AsyncSession, class_name: str) -> int:
+        print('dao.py:28 class_name=%s' % class_name)
         return (await cls.get_by_name(session, class_name)).id
     # @classmethod
     # async def get_lessons(cls, class_: ClassBase, session: AsyncSession) -> Timetable:
@@ -149,4 +150,4 @@ class HomeworkDAO(BaseDAO):
         result = await session.execute(query)
         
         homework = result.one_or_none()
-        return homework
+        return homework[0] if homework else None

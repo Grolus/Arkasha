@@ -32,8 +32,8 @@ class UpdateLogerMiddleware(BaseMiddleware):
         separator = SEPARATORS.get(event_type, DEFAULT_SEPARATOR)
         information, full_name, username = get_information_and_user(event)
         user_string = f'{full_name} (@{username})'
-        loger.info(f' [{event_type.upper()}] {user_string} {separator} {information}')
+        loger.info(f'[{event_type.upper()}] {user_string} {separator} {information}')
         result = await handler(event, data)
         if isinstance(result, Message):
-            loger.info(f'{user_string} <<< {result.text}' + ('\n<with keyboard>' if isinstance(result.reply_markup, InlineKeyboardMarkup) else ''))
+            loger.info(f'{user_string} <<< {result.text}' + (' <with keyboard>' if isinstance(result.reply_markup, InlineKeyboardMarkup) else ''))
         return result

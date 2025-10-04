@@ -7,10 +7,15 @@ from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, C
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.state import State, StatesGroup
 
+from ..public import get_prompt_from_file
+
 from config.constants import DEFAULT_CALLBACK_DATA_SEPARATOR
 from service import class_service as service
 from model import Class
 
+
+def get_text(name: str) -> str:
+    return get_prompt_from_file(f'get_class/{name}.txt')
 
 # service.get_class_for_chat_id: Callable[[int], Class]
 # service.get_user_classes: Callable[[User], list[Class]]
@@ -47,12 +52,12 @@ class GetClassMiddleware(BaseMiddleware):
             return await handler(message_or_callback, data)
         elif user_classes := await service.get_user_classes(username):
             await data['state'].set_state(SetClassState.choosing_class)
-            return await message.answer('Сначала выберите класс', reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            return await message.answer(get_text('choose_class'), reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                 InlineKeyboardButton(
                     text=class_.name, callback_data=ChoosedClassCallback.from_class(class_).pack()
                 )] for class_ in user_classes
             ]))
         else:
-            return await message.answer('Для данного чата не выбран класс')
+            return await message.answer(get_text('class_not_found'))
             
 
