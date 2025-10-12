@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, text
 
 from .base import BaseDAO
 from ..models import ClassBase, SubjectBase, LessonBase, HomeworkBase, ClassChatBase, GroupNumberEnum
@@ -25,7 +25,7 @@ class ClassDAO(BaseDAO):
     
     @classmethod 
     async def get_id_by_name(cls, session: AsyncSession, class_name: str) -> int:
-        print('dao.py:28 class_name=%s' % class_name)
+        # print('dao.py:28 class_name=%s' % class_name)
         return (await cls.get_by_name(session, class_name)).id
     # @classmethod
     # async def get_lessons(cls, class_: ClassBase, session: AsyncSession) -> Timetable:
@@ -78,8 +78,8 @@ class LessonDAO(BaseDAO):
     async def insert_timetable(cls, session: AsyncSession, class_id: int, timetable: Timetable):
         lesson_rows = []
         inserted_subjects: dict[str: int] = {}
-        for wd, lessons in timetable.timetable_dict.items():
-            for pos, lessons in enumerate(lessons):
+        for wd, daily_tt in timetable.timetable_dict.items():
+            for pos, lessons in enumerate(daily_tt.lessons):
                 if len(lessons) == 1:
                     subject_name = lessons[0].subject.name
                     if not (subject_id := inserted_subjects.get(subject_name)):
@@ -151,3 +151,32 @@ class HomeworkDAO(BaseDAO):
         
         homework = result.one_or_none()
         return homework[0] if homework else None
+    
+    @classmethod
+    async def get_all_homeworks_for_day(cls, session: AsyncSession, class_id: int, weekday_number: int, week: int, year: int) -> list[HomeworkBase]:
+        # print(f'{class_id=}, {weekday_number=}, {week=}, {year=}')
+        query = (
+            select(LessonBase, HomeworkBase)
+            .outerjoin(HomeworkBase, HomeworkBase.lesson_id==LessonBase.id)
+            .join(SubjectBase, SubjectBase.id==LessonBase.subject_id)
+            .where(
+                LessonBase.class_id == class_id,
+                LessonBase.weekday_number == weekday_number,
+                or_(HomeworkBase.class_id == class_id, HomeworkBase.class_id == None),
+                or_(HomeworkBase.week == week, HomeworkBase.week == None),
+                or_(HomeworkBase.year == year, HomeworkBase.year == None)
+            )
+            .order_by(LessonBase.position, LessonBase.group_number)
+        )
+        
+        # print('dao.py:172 query=', str(query), )
+        
+        result = await session.execute(query)
+        
+        
+        # print('result:')
+        # for row in result:
+            
+        #     print(*row, sep='; ')
+        
+        return [(lesson, homework) for lesson, homework in result]

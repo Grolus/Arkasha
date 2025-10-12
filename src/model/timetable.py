@@ -5,8 +5,14 @@ from .weekday import Weekday, Slot, WWDate
 from .subject import Subject
 from enums import GroupNumberEnum
 
+
+class DailyTimetable(BaseModel):
+    lessons: list[list[Lesson] | None]
+    def __iter__(self):
+        return iter(self.lessons)
+
 class Timetable(BaseModel):
-    timetable_dict: dict[Weekday, list[list[Lesson]]]
+    timetable_dict: dict[Weekday, DailyTimetable]
     
     def get_relative_slots_for_subject(
         self, 
@@ -40,7 +46,7 @@ class Timetable(BaseModel):
                             wwdate=WWDate(weekday=weekday, week=now_wwdate.week + (weekday <= now_weekday), year=now_wwdate.year),
                             position=position
                         ))
-        slots.sort(key=lambda s: s.wwdate.year * 365 + s.wwdate.week * 7 + int(s.wwdate.weekday))
+        slots.sort(key=lambda s: s.wwdate.to_date().toordinal() * 10 + s.position)
         return slots
         
     def get_slots_for_subject(self, subject: Subject, group_number_to_find: int) -> list[(Weekday, int)]: 

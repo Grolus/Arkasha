@@ -5,6 +5,7 @@ from .testing import router as test_router
 from .new_homework import router as hw_set_router
 from .get_homework import router as hw_get_router
 from .instant_get_homework import router as instant_hw_get_router
+from .get_all_homework import router as get_all_homework_router
 
 routers = [
     start_router,
@@ -12,6 +13,7 @@ routers = [
     hw_set_router,
     hw_get_router,
     instant_hw_get_router,
+    get_all_homework_router,
     setclass_router,
     test_router,
 ]

@@ -49,8 +49,6 @@ subrouter_subject_checking.message.middleware(CheckForSubjectMiddleware())
 @subrouter_subject_checking.message(F.text.regexp(r'что по .*\?'))
 async def subject_found(message: Message, state: FSMContext, class_: Class, subject: Subject):
     
-    print('МЫ ТУТ')
-    
     await state.set_data({DataPart.subject: subject})
     await state.set_state(GetHomeworkState.instant_triggered)
     

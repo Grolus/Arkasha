@@ -26,6 +26,12 @@ EMPTY_LESSON_VIEW = "ОКНО (нет урока)"
 GROOPED_LESSON_SUBJECTS_SEPARATOR = " / "
 """Разделитель предметов в описании уроков, разделённых на группы"""
 
+NO_HOMEWORK_MARKER = "❌"
+"""Символ в сообщении около отсутствующего задания"""
+
+EXISTED_HOMEWORK_MARKER = "✅"
+"""Символ в сообщении около присутствующего задания"""
+
 DEFAULT_CALLBACK_DATA_SEPARATOR = '_'
 """Разделитель в callback data"""
 

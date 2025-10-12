@@ -1,5 +1,5 @@
 
-from model import Class, Lesson, Subject, Timetable, Weekday, Homework, Slot, WWDate
+from model import Class, Lesson, Subject, Timetable, Weekday, Homework, Slot, WWDate, DailyTimetable
 
 from database.models import ClassBase, LessonBase, HomeworkBase
 from database.dao.dao import ClassDAO
@@ -37,9 +37,9 @@ def lessons_to_timetable(table_lessons: list[LessonBase]) -> Timetable:
         timetable_dict[k] = lessons_list
 
     timetable_dict = {
-        Weekday(weekday_number): [
+        Weekday(weekday_number): DailyTimetable(lessons=[
             lesson for lesson in lessons
-        ]
+        ])
         for weekday_number, lessons in timetable_dict.items()
     }
     return Timetable(timetable_dict=timetable_dict)    
@@ -66,10 +66,6 @@ def homework_to_model(table_homework: HomeworkBase) -> Homework:
     )
 
 
-# def lesson_to_model(table_lesson: LessonBase) -> Lesson:
-#     return Lesson(
-#         subjects=[
-#             subject_to_model(subject)
-#             for subject in table_lesson.su
-#         ]
-#     )
+def lesson_to_model(table_lesson: LessonBase) -> Lesson:
+    return Lesson(subject=subject_to_model(table_lesson.subject))
+

@@ -13,15 +13,14 @@ class Class(BaseModel):
             return self.__subjects
         self.__subjects = []
         for day in self.timetable.timetable_dict.values():
-            for lesson in day:
-                if lesson:
-                    self.__subjects.extend([s.subject for s in lesson])
+            for lesson in day.lessons:
+                self.__subjects.extend([s.subject for s in lesson])
         self.__subjects = list(set(self.__subjects))
         return self.__subjects
     
     def get_if_subject_grouped(self, subject: Subject) -> bool:
         for day in self.timetable.timetable_dict.values():
-            for lessons in day:
+            for lessons in day.lessons:
                 if len(lessons) > 1 and subject in [l.subject for l in lessons]:
                     print(f'{subject.name} is grouped')
                     return True

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, NonNegativeInt, Field, PositiveInt
-from typing_extensions import Self
+from typing_extensions import Self, Literal
 from exceptions import ParsingError
 import datetime
 
@@ -55,6 +55,8 @@ class Weekday(BaseModel):
     @property
     def prepositional(self):
         return WEEKDAY_TO_PREPOSITIONAL[self.weekday_number]
+    def to_case(self, case: Literal['nominative', 'genetive', 'accusative', 'dativ', 'instrumental', 'prepositional']) -> str:
+        return getattr(self, case)
     def __repr__(self):
         return f'Weekday({WEEKDAY_TO_NAME_ENG[self.weekday_number]})'
     def __str__(self): 
@@ -104,23 +106,53 @@ class WWDate(BaseModel):
 
     @classmethod
     def from_date(cls, date: datetime.date) -> Self:
-        week = (
-            datetime.datetime(date.year, 1, 1).weekday() + 
-            date.timetuple().tm_yday
-        ) // 7 - 1
-        if date.weekday() == 6:
-            week -= 1
-        weekday = date.weekday()
-        year = date.year
-        return WWDate(
-            weekday=Weekday(weekday_number=weekday),
-            week=week,
-            year=year
-        )
+        
+        year, week, weekday_number = date.isocalendar() 
+        weekday = Weekday(weekday_number - 1)
+        
+        return WWDate(weekday=weekday, week=week, year=year)
+        
+        # week = (
+        #     datetime.datetime(date.year, 1, 1).weekday() + 
+        #     date.timetuple().tm_yday
+        # ) // 7 - 1
+        # if date.weekday() == 6:
+        #     week -= 1
+        # weekday = date.weekday()
+        # year = date.year
+        # return WWDate(
+        #     weekday=Weekday(weekday_number=weekday),
+        #     week=week,
+        #     year=year
+        # )
+        
+        
+    def to_date(self) -> datetime.date:
+        return datetime.date.fromisocalendar(self.year, self.week, int(self.weekday)+1)
+    
+    def __add__(self, other: 'WWDateDelta'):
+        new_date_ordinal = self.to_date().toordinal() + other.to_days_amount()
+        return WWDate.from_date(datetime.date.fromordinal(new_date_ordinal))
+    
+    def add_days(self, days_amount: int):
+        new_date_ordinal = self.to_date().toordinal() + days_amount
+        return WWDate.from_date(datetime.date.fromordinal(new_date_ordinal))
     
     def __hash__(self) -> int:
         return self.year * 365 + self.week * 7 + int(self.weekday)
         
+class WWDateDelta(WWDate):
+    def __init__(self, weekday: Weekday, week: int, year: int):
+        self.weekday = weekday
+        self.week = week
+        self.year = year
+    def _to_days_amount(self):
+        return self.to_date().toordinal()
+    def __add__(self, other: 'WWDateDelta'):
+        new_date_ordinal = self.to_date().toordinal() + other.to_days_amount()
+        return WWDate.from_date(datetime.date.fromordinal(new_date_ordinal))
+    
+    
 class Slot(BaseModel):
     wwdate: WWDate
     position: int

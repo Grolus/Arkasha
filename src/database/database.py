@@ -14,6 +14,9 @@ class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(id={self.id})'
+    
     
 def connection(func):
     async def wrapper(*args, **kwargs):

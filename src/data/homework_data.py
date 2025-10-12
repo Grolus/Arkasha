@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from model import Homework, Class, Subject, WWDate
+from model import Homework, Class, Subject, WWDate, Lesson, Slot, Weekday
 from enums import GroupNumberEnum
 
 from database.dao.dao import HomeworkDAO, ClassDAO, LessonDAO, SubjectDAO
 from database.database import connection
 
-from .converter import homework_to_model
+from .converter import homework_to_model, subject_to_model, class_to_model
 
 @connection
 async def save_homework(homework: Homework, session: AsyncSession) -> None:
@@ -49,3 +49,24 @@ async def get_last_saved_homework(class_: Class, subject: Subject, group: GroupN
         return None
     return homework_to_model(homework)
     
+@connection
+async def get_all_homeworks_for_day(class_: Class, wwdate: WWDate, session: AsyncSession) -> list[tuple[Lesson, Homework]]:
+    class_id = await ClassDAO.get_id_by_name(session, class_.name)
+    homeworks_base = await HomeworkDAO.get_all_homeworks_for_day(session, class_id, int(wwdate.weekday), wwdate.week, wwdate.year)
+    return [
+        homework_to_model(hw) 
+        if hw else 
+        Homework( # empty homework
+            subject=subject_to_model(lesson.subject), 
+            text=None, 
+            class_=class_, 
+            slot=Slot(
+                position=lesson.position,
+                wwdate=wwdate
+            ),
+            attachment_url=None,
+            group=lesson.group_number,
+            is_empty=True
+        ) 
+        for lesson, hw in homeworks_base 
+    ]

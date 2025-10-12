@@ -1,5 +1,5 @@
 
-from model import Subject, Class, WWDate, Slot, Homework
+from model import Subject, Class, WWDate, Slot, Homework, Weekday
 from enums import GroupNumberEnum
 from data import homework_data as data
 
@@ -9,7 +9,7 @@ def get_closest_slot(class_: Class, now_wwdate: WWDate, subject: Subject, group:
     group_index = 0 if group == GroupNumberEnum.FIRST else 1 if group == GroupNumberEnum.SECOND else None
     for dweekday in range(1, 8):
         if lessons := class_.timetable.timetable_dict.get(now_weekday + dweekday):
-            for pos, lesson in enumerate(lessons):
+            for pos, lesson in enumerate(lessons.lessons):
                 if (len(lesson) == 1 and subject == lesson[0].subject
                     or
                     len(lesson) == 2 and group != GroupNumberEnum.NOT_GROUPED and subject == lesson[group_index].subject
@@ -36,3 +36,10 @@ async def get_last_saved_homework(class_: Class, subject: Subject, group: GroupN
     """Возвращает последнее сохраненное дз по предмету или None, если никакого дз не сохраняли"""
     return await data.get_last_saved_homework(class_, subject, group) 
             
+async def get_all_homeworks_for_day(class_: Class, wwdate: WWDate) -> list[Homework]:
+    """Возвращает все доступные задания на день в виде списка
+    
+    Список отсортирован по позиции и номеру группы
+    
+    При отсутствии задания создает объект пустого задания"""
+    return await data.get_all_homeworks_for_day(class_, wwdate)
