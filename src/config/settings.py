@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+    USE_PROXY: bool
     
     class Config:
         env_file = ".env"

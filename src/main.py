@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
 import logging
@@ -16,6 +17,7 @@ from bot.middlewares import UpdateLogerMiddleware, GetWeekAndWeekdayMiddleware
 async def main():
     bot = Bot(
         token=settings.BOT_TOKEN,
+        session=AiohttpSession(proxy="http://proxy.server:3128") if settings.USE_PROXY else None,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()
