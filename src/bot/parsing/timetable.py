@@ -4,7 +4,7 @@ from._parsing_utils import split_with_ignoring
 from .weekday import parse_weekday
 from .lesson import parse_lesson
 
-from model import Timetable, Lesson
+from model import Timetable, Lesson, DailyTimetable
 from exceptions import ParsingError
 from config.constants import EMPTY_LESSON_INPUT
 from logers import parse_loger
@@ -32,12 +32,12 @@ def parse_timetable(text: str) -> Timetable:
         lessons_string = lessons_string.strip()
         weekday = parse_weekday(weekday_string)
         lessons = _parse_lessons(lessons_string)
-        timetable_dict[weekday] = lessons
+        timetable_dict[weekday] = DailyTimetable(lessons=lessons)
     return Timetable(
         timetable_dict=timetable_dict
     )
 
-def _parse_lessons(text: str) -> list[Lesson | None]:
+def _parse_lessons(text: str) -> list[list[Lesson]]:
     lessons = []
     for i, lesson_string in enumerate(split_with_ignoring(text, LESSONS_SEPARATOR, '()')):
         lesson_string = lesson_string.strip()
