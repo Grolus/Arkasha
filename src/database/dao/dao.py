@@ -35,7 +35,7 @@ class ClassDAO(BaseDAO):
     async def get_by_user(cls, username: str, session: AsyncSession) -> list[ClassBase]:
         stmt = select(cls.model).where(cls.model.creator_username == username)
         result = await session.execute(stmt)
-        classes = result.scalars()
+        classes = result.scalars().unique()
         return list(classes)
         
 class ClassChatDAO(BaseDAO):

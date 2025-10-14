@@ -20,7 +20,7 @@ class SubjectBase(Base):
     __tablename__ = 'subject'
     
     name: Mapped[str] = mapped_column(String(MAX_SUBJECT_NAME_LENGTH))
-    class_id: Mapped[int] = mapped_column(ForeignKey('classtable.id'))
+    class_id: Mapped[int] = mapped_column(ForeignKey('classtable.id', ondelete='CASCADE'))
     
     class_: Mapped['ClassBase'] = relationship(
         'ClassBase',
@@ -56,7 +56,7 @@ class ClassChatBase(Base):
     __tablename__ = 'classchat'
     
     chat_id: Mapped[int] = mapped_column(BIGINT, unique=True)
-    class_id: Mapped[int] = mapped_column(ForeignKey('classtable.id'))
+    class_id: Mapped[int] = mapped_column(ForeignKey('classtable.id', ondelete='CASCADE'))
     
     class_: Mapped[ClassBase] = relationship(
         'ClassBase',
